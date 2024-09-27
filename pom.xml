@@ -25,6 +25,35 @@
       <version>4.11</version>
       <scope>test</scope>
     </dependency>
+    <!-- Spring Boot Starter Web dependency -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-web</artifactId>
+        <version>3.1.0</version> <!-- Spring Boot version -->
+    </dependency>
+
+    <dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-logging</artifactId>
+    <version>3.1.0</version> <!-- Spring Boot version -->
+</dependency>
+
+    <!-- Optional: Spring Boot DevTools for hot reload -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-devtools</artifactId>
+        <version>3.1.0</version> <!-- Spring Boot version -->
+        <scope>runtime</scope>
+        <optional>true</optional>
+    </dependency>
+
+    <!-- Test dependencies -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-test</artifactId>
+        <version>3.1.0</version> <!-- Spring Boot version -->
+        <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
