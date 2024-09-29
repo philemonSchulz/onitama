@@ -5,7 +5,7 @@ This repository contains the client program for Onitama, developed as part of th
 ## Features
 
 - Play Onitama locally against AI models
-- Connect to the [Onitama API](https://github.com/yourusername/Onitama-api) for online gameplay
+- Connect to the [Onitama API](https://github.com/philemonSchulz/onitama-api) for online gameplay
 
 ## Overview
 
