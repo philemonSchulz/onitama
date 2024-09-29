@@ -1,5 +1,6 @@
 package com.example.model;
 
+import com.example.model.Player.PlayerColor;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
@@ -14,16 +15,18 @@ public class Move {
         this.y = y;
     }
 
-    public int getX(boolean invert) {
-        if (invert) {
+    // Moves are mirrored for the Blue Player
+    public int getX(PlayerColor playerColor) {
+        if (playerColor == PlayerColor.BLUE) {
             return x * -1;
         } else {
             return x;
         }
     }
 
-    public int getY(boolean invert) {
-        if (invert) {
+    // Moves are mirrored for the Blue Player
+    public int getY(PlayerColor playerColor) {
+        if (playerColor == PlayerColor.BLUE) {
             return y * -1;
         } else {
             return y;

@@ -54,6 +54,20 @@
         <version>3.1.0</version> <!-- Spring Boot version -->
         <scope>test</scope>
     </dependency>
+
+    <!-- WebSocket support -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-websocket</artifactId>
+        <version>3.1.0</version>
+    </dependency>
+
+    <!-- Messaging support for STOMP protocol -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-web</artifactId>
+        <version>3.1.0</version>
+    </dependency>
   </dependencies>
 
   <build>

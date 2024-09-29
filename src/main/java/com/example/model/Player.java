@@ -6,7 +6,7 @@ public class Player {
     }
 
     public enum AiType {
-        RANDOM, MCTS
+        RANDOM, RANDOM_PRIOTIZING, MCTS
     }
 
     private PlayerColor color;

@@ -40,11 +40,12 @@ public class Card {
     public HashSet<Move> getAllowedMoves(int x, int y, PlayerColor playerColor) {
         HashSet<Move> allowedMoves = new HashSet<>();
         for (Move move : moves) {
-            if (x + move.getX(playerColor == PlayerColor.BLUE) >= 0
-                    && x + move.getX(playerColor == PlayerColor.BLUE) < Board.BOARD_SIZE
-                    && y + move.getY(playerColor == PlayerColor.BLUE) >= 0
-                    && y + move.getY(playerColor == PlayerColor.BLUE) < Board.BOARD_SIZE) {
-                allowedMoves.add(new Move(move.getX(false), move.getY(false)));
+            if (x + move.getX(playerColor) >= 0
+                    && x + move.getX(playerColor) < Board.BOARD_SIZE
+                    && y + move.getY(playerColor) >= 0
+                    && y + move.getY(playerColor) < Board.BOARD_SIZE) {
+                // Send back the original move, not the mirrored one
+                allowedMoves.add(new Move(move.getX(PlayerColor.RED), move.getY(PlayerColor.RED)));
             }
         }
         return allowedMoves;
