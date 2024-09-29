@@ -1,18 +1,14 @@
 package com.example.service;
 
 import java.util.HashMap;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.simp.SimpMessageType;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import com.example.aimodels.RandomAi;
 import com.example.exceptions.GameAlreadyStartedException;
 import com.example.exceptions.GameNotFoundException;
-import com.example.model.Board;
 import com.example.model.Game;
 import com.example.model.MoveObject;
 import com.example.model.Player;

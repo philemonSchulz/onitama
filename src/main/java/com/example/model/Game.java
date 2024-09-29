@@ -1,10 +1,8 @@
 package com.example.model;
 
 import java.util.ArrayList;
-import java.util.UUID;
 
 import com.example.service.CardCreator;
-import com.example.model.Player.AiType;
 import com.example.model.Player.PlayerColor;
 
 public class Game {
@@ -49,7 +47,8 @@ public class Game {
                 pieces.add(
                         new Piece(Piece.PieceType.MASTER, playerColor, playerColor == PlayerColor.RED ? "RM" : "BM"));
             } else {
-                pieces.add(new Piece(Piece.PieceType.STUDENT, playerColor, playerColor == PlayerColor.RED ? "R" : "B"));
+                pieces.add(new Piece(Piece.PieceType.STUDENT, playerColor,
+                        playerColor == PlayerColor.RED ? "R" + i : "B" + i));
             }
         }
         return pieces;

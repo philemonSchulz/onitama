@@ -4,7 +4,6 @@ import java.util.LinkedList;
 
 import com.example.controller.MoveController;
 import com.example.model.Game;
-import com.example.model.Move;
 import com.example.model.MoveObject;
 import com.example.model.Player.PlayerColor;
 

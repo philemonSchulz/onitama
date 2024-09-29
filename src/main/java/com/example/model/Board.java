@@ -1,10 +1,6 @@
 package com.example.model;
 
-import java.util.ArrayList;
-
-import com.example.service.CardCreator;
 import com.example.model.Piece.PieceType;
-import com.example.model.Player.PlayerColor;
 
 public class Board {
     public static final int BOARD_SIZE = 7;

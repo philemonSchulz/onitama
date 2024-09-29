@@ -38,6 +38,10 @@ public class Tile {
         return piece;
     }
 
+    public boolean isTempleReached() {
+        return templeColor != null && piece != null && piece.getColor() != templeColor;
+    }
+
     public Piece getPiece() {
         return piece;
     }
