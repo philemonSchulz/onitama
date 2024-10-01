@@ -24,7 +24,6 @@ public class GameClient {
     private String gameId;
     private PlayerColor playerColor;
     private GameService gameService;
-    private WebSocketGameClient webSocketGameClient;
     private boolean gameIsRunning;
 
     public GameClient(GameService gameService) {
@@ -100,8 +99,7 @@ public class GameClient {
             } else {
                 System.out.println("Open Games:");
                 openGames.forEach((id, game) -> System.out.println(
-                        "Game ID: " + id + " | Players: " + game.getPlayerRed().getColor() + " vs "
-                                + game.getPlayerBlue().getColor()));
+                        "Game ID: " + id));
             }
         } else {
             System.out.println("Failed to fetch open games.");
@@ -154,7 +152,7 @@ public class GameClient {
     }
 
     public void createGame(boolean isAiGame, AiType aiType) {
-        String endpoint = isAiGame ? "/create?aiType=" + aiType : "/game/create";
+        String endpoint = isAiGame ? "/create?aiType=" + aiType : "/create";
         String url = baseUrl + endpoint;
 
         Game newGame = restTemplate.postForObject(url, null, Game.class);
@@ -176,8 +174,8 @@ public class GameClient {
             this.playerColor = PlayerColor.BLUE;
             System.out.println("Joined game with ID: " + gameId);
 
-            webSocketGameClient = new WebSocketGameClient(playerColor, gameService);
-            webSocketGameClient.connect(gameId);
+            this.gameIsRunning = true;
+            checkIfMyTurn();
         } else {
             System.out.println("Failed to join game.");
         }
@@ -230,10 +228,8 @@ public class GameClient {
         if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
             boolean isFinished = response.getBody();
             if (isFinished) {
-                System.out.println("Game is finished.");
                 return true;
             } else {
-                System.out.println("Game is not finished.");
                 return false;
             }
         } else {
@@ -255,10 +251,8 @@ public class GameClient {
         if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
             boolean isMyTurn = response.getBody();
             if (isMyTurn) {
-                System.out.println("It's your turn.");
                 return true;
             } else {
-                System.out.println("It's not your turn.");
                 return false;
             }
         } else {
