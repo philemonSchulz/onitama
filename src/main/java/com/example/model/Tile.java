@@ -1,6 +1,8 @@
 package com.example.model;
 
 import com.example.model.Player.PlayerColor;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Tile {
     private int x;
@@ -8,15 +10,13 @@ public class Tile {
     private PlayerColor templeColor;
     private Piece piece;
 
-    public Tile(int x, int y) {
-        this.x = x;
-        this.y = y;
-    }
-
-    public Tile(int x, int y, PlayerColor templeColor) {
+    @JsonCreator
+    public Tile(@JsonProperty("x") int x, @JsonProperty("y") int y,
+            @JsonProperty("templeColor") PlayerColor templeColor, @JsonProperty("piece") Piece piece) {
         this.x = x;
         this.y = y;
         this.templeColor = templeColor;
+        this.piece = piece;
     }
 
     public Tile(Tile tile) {

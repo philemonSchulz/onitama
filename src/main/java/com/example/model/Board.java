@@ -1,6 +1,8 @@
 package com.example.model;
 
 import com.example.model.Piece.PieceType;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Board {
     public static final int BOARD_SIZE = 7;
@@ -11,14 +13,19 @@ public class Board {
         for (int x = 0; x < BOARD_SIZE; x++) {
             for (int y = 0; y < BOARD_SIZE; y++) {
                 if (x == 3 && y == 0) {
-                    this.board[x][y] = new Tile(x, y, Player.PlayerColor.RED);
+                    this.board[x][y] = new Tile(x, y, Player.PlayerColor.RED, null);
                 } else if (x == 3 && y == BOARD_SIZE - 1) {
-                    this.board[x][y] = new Tile(x, y, Player.PlayerColor.BLUE);
+                    this.board[x][y] = new Tile(x, y, Player.PlayerColor.BLUE, null);
                 } else {
-                    this.board[x][y] = new Tile(x, y);
+                    this.board[x][y] = new Tile(x, y, null, null);
                 }
             }
         }
+    }
+
+    @JsonCreator
+    public Board(@JsonProperty("board") Tile[][] board) {
+        this.board = board;
     }
 
     public Board(Board board) {
@@ -28,6 +35,10 @@ public class Board {
                 this.board[x][y] = new Tile(board.getTile(x, y));
             }
         }
+    }
+
+    public void setBoard(Tile[][] board) {
+        this.board = board;
     }
 
     public Tile[][] getBoard() {

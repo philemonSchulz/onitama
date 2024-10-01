@@ -3,15 +3,15 @@ package com.example.client;
 import java.util.Scanner;
 
 import com.example.model.Player.AiType;
-import com.example.service.GameService2;
+import com.example.service.GameService;
 
 public class OnitamaClient {
     private Scanner scanner;
-    private GameService2 gameService;
+    private GameService gameService;
 
     public OnitamaClient() {
         this.scanner = new Scanner(System.in);
-        this.gameService = new GameService2();
+        this.gameService = new GameService();
     }
 
     public void run() {
@@ -62,7 +62,7 @@ public class OnitamaClient {
         }
     }
 
-    private AiType chooseAiType(String headString) {
+    public AiType chooseAiType(String headString) {
         System.out.println(headString);
         System.out.println("1. Random");
         System.out.println("2. Random Ai with priority to capturing moves");
@@ -79,5 +79,7 @@ public class OnitamaClient {
 
     private void connectToServer() {
         // Logic for server play
+        GameClient apiClient = new GameClient(gameService);
+        apiClient.start();
     }
 }

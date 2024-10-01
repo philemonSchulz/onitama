@@ -1,8 +1,11 @@
 package com.example.model;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import com.example.service.CardCreator;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.example.model.Player.PlayerColor;
 
 public class Game {
@@ -24,7 +27,11 @@ public class Game {
     private ArrayList<Piece> playerBluePieces;
     private Card nextCard;
 
-    public Game(String gameId) {
+    public Game() {
+    }
+
+    @JsonCreator
+    public Game(@JsonProperty("gameId") String gameId) {
         this.gameId = gameId;
         this.board = new Board();
         Card[] cards = CardCreator.getFiveRandomCards();
@@ -45,10 +52,11 @@ public class Game {
         for (int i = 0; i < Board.BOARD_SIZE; i++) {
             if (i == (Board.BOARD_SIZE / 2)) {
                 pieces.add(
-                        new Piece(Piece.PieceType.MASTER, playerColor, playerColor == PlayerColor.RED ? "RM" : "BM"));
+                        new Piece(Piece.PieceType.MASTER, playerColor, playerColor == PlayerColor.RED ? "RM" : "BM",
+                                null, null));
             } else {
                 pieces.add(new Piece(Piece.PieceType.STUDENT, playerColor,
-                        playerColor == PlayerColor.RED ? "R" + i : "B" + i));
+                        playerColor == PlayerColor.RED ? "R" + i : "B" + i, null, null));
             }
         }
         return pieces;
@@ -129,54 +137,67 @@ public class Game {
         this.nextCard = nextCard;
     }
 
+    @JsonProperty("gameId")
     public String getGameId() {
         return gameId;
     }
 
+    @JsonProperty("beginTime")
     public long getBeginTime() {
         return beginTime;
     }
 
+    @JsonProperty("turnStartTime")
     public long getTurnStartTime() {
         return turnStartTime;
     }
 
+    @JsonProperty("gameState")
     public GameState getGameState() {
         return gameState;
     }
 
+    @JsonProperty("board")
     public Board getBoard() {
         return board;
     }
 
+    @JsonProperty("playerRed")
     public Player getPlayerRed() {
         return playerRed;
     }
 
+    @JsonProperty("playerBlue")
     public Player getPlayerBlue() {
         return playerBlue;
     }
 
+    @JsonProperty("currentPlayer")
     public Player getCurrentPlayer() {
         return currentPlayer;
     }
 
-    public ArrayList<Card> getPlayerRedCards() {
+    @JsonProperty("playerRedCards")
+    public List<Card> getPlayerRedCards() {
         return playerRedCards;
     }
 
-    public ArrayList<Card> getPlayerBlueCards() {
+    @JsonProperty("playerBlueCards")
+    public List<Card> getPlayerBlueCards() {
         return playerBlueCards;
     }
 
-    public ArrayList<Piece> getPlayerRedPieces() {
+    @JsonProperty("playerRedPieces")
+    public List<Piece> getPlayerRedPieces() {
         return playerRedPieces;
     }
 
-    public ArrayList<Piece> getPlayerBluePieces() {
+    @JsonProperty("playerBluePieces")
+    public List<Piece> getPlayerBluePieces() {
         return playerBluePieces;
     }
 
+    @JsonProperty("nextCard")
     public Card getNextCard() {
         return nextCard;
     }

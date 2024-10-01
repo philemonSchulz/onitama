@@ -1,17 +1,36 @@
 package com.example.model;
 
 import com.example.model.Player.PlayerColor;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-@JsonSerialize
-@JsonDeserialize
 public class Move {
     private int x;
     private int y;
 
-    public Move(int x, int y) {
+    public Move() {
+    }
+
+    @JsonCreator
+    public Move(@JsonProperty("x") int x, @JsonProperty("y") int y) {
         this.x = x;
+        this.y = y;
+    }
+
+    // Getters and Setters for x and y
+    public int getX() {
+        return x;
+    }
+
+    public void setX(int x) {
+        this.x = x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    public void setY(int y) {
         this.y = y;
     }
 

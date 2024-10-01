@@ -1,5 +1,8 @@
 package com.example.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class Player {
     public enum PlayerColor {
         RED, BLUE
@@ -12,11 +15,12 @@ public class Player {
     private PlayerColor color;
     private AiType aiType;
 
-    public Player(PlayerColor color) {
-        this.color = color;
+    public Player() {
+        // Default constructor for deserialization
     }
 
-    public Player(PlayerColor color, AiType aiType) {
+    @JsonCreator
+    public Player(@JsonProperty("color") PlayerColor color, @JsonProperty("aiType") AiType aiType) {
         this.color = color;
         this.aiType = aiType;
     }

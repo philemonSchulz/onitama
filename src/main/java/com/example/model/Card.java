@@ -1,15 +1,23 @@
 package com.example.model;
 
 import java.util.HashSet;
+import java.util.Set;
 
 import com.example.model.Player.PlayerColor;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Card {
-    private HashSet<Move> moves;
+    private Set<Move> moves;
     private String name;
     private PlayerColor color;
 
-    public Card(String name, PlayerColor color) {
+    public Card() {
+        this.moves = new HashSet<>();
+    }
+
+    @JsonCreator
+    public Card(@JsonProperty("name") String name, @JsonProperty("color") PlayerColor color) {
         this.name = name;
         this.color = color;
         this.moves = new HashSet<>();
@@ -25,14 +33,17 @@ public class Card {
         moves.add(new Move(x, y));
     }
 
-    public HashSet<Move> getMoves() {
-        return moves;
+    @JsonProperty("moves")
+    public Set<Move> getMoves() {
+        return moves; // Return as Set
     }
 
+    @JsonProperty("name")
     public String getName() {
         return name;
     }
 
+    @JsonProperty("color")
     public PlayerColor getColor() {
         return color;
     }

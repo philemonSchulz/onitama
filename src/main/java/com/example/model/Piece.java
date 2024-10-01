@@ -1,5 +1,8 @@
 package com.example.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class Piece {
     public enum PieceType {
         STUDENT, MASTER
@@ -11,10 +14,18 @@ public class Piece {
     private Integer x;
     private Integer y;
 
-    public Piece(PieceType type, Player.PlayerColor color, String name) {
+    public Piece() {
+        // Default constructor for deserialization
+    }
+
+    @JsonCreator
+    public Piece(@JsonProperty("type") PieceType type, @JsonProperty("color") Player.PlayerColor color,
+            @JsonProperty("name") String name, @JsonProperty("x") Integer x, @JsonProperty("y") Integer y) {
         this.type = type;
         this.color = color;
         this.name = name;
+        this.x = x;
+        this.y = y;
     }
 
     public Piece(Piece piece) {
@@ -35,23 +46,44 @@ public class Piece {
         this.y = null;
     }
 
-    public int getX() {
-        return x;
-    }
-
-    public int getY() {
-        return y;
-    }
-
+    // Getters and setters for all fields
     public PieceType getType() {
         return type;
+    }
+
+    public void setType(PieceType type) {
+        this.type = type;
     }
 
     public Player.PlayerColor getColor() {
         return color;
     }
 
+    public void setColor(Player.PlayerColor color) {
+        this.color = color;
+    }
+
     public String getName() {
         return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Integer getX() {
+        return x;
+    }
+
+    public void setX(Integer x) {
+        this.x = x;
+    }
+
+    public Integer getY() {
+        return y;
+    }
+
+    public void setY(Integer y) {
+        this.y = y;
     }
 }
