@@ -1,15 +1,19 @@
 package com.example.service;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Scanner;
 import java.util.UUID;
 
+import com.example.aimodels.MCTS;
 import com.example.aimodels.RandomAi;
 import com.example.controller.MoveController;
+import com.example.model.Card;
 import com.example.model.Game;
 import com.example.model.Player;
 import com.example.model.Game.GameState;
-import com.example.model.MoveObject;
+import com.example.model.GameStats;
+import com.example.model.Move;
 import com.example.model.Piece;
 import com.example.model.Piece.PieceType;
 import com.example.model.Player.AiType;
@@ -39,7 +43,7 @@ public class GameService {
         return true;
     }
 
-    public boolean aiVsAi(AiType aiType1, AiType aiType2) {
+    public GameStats aiVsAi(AiType aiType1, AiType aiType2) {
         Game game = new Game(UUID.randomUUID().toString());
         game.setPlayerRed(new Player(PlayerColor.RED, aiType1));
         game.setPlayerBlue(new Player(PlayerColor.BLUE, aiType2));
@@ -54,15 +58,32 @@ public class GameService {
         if (game.getGameState() == GameState.FINISHED) {
             System.out.println("Game finished. Winner: " + game.getCurrentPlayer().getColor());
         }
-        return true;
+        return new GameStats(game.getCurrentPlayer(), System.currentTimeMillis() - game.getBeginTime());
     }
 
-    public MoveObject getMoveForServerGame(Game game) {
+    public Move getMoveForServerGame(Game game) {
         if (game.getCurrentPlayer().isAi()) {
             return generateAiMove(game);
         } else {
             return generateOwnMove(game);
         }
+    }
+
+    /**
+     * Custom Method do allow for specific tests
+     */
+    public void runCustomTests() {
+        int redwins = 0;
+        int bluewins = 0;
+        for (int i = 0; i < 1; i++) {
+            GameStats stats = aiVsAi(AiType.MCTS, AiType.RANDOM_PRIOTIZING);
+            if (stats.getWinner().getColor() == PlayerColor.RED) {
+                redwins++;
+            } else {
+                bluewins++;
+            }
+        }
+        System.out.println("Red wins: " + redwins + ", Blue wins: " + bluewins);
     }
 
     /*
@@ -71,7 +92,7 @@ public class GameService {
 
     public void playAiMove(Game game) {
         if (game.getGameState() == GameState.IN_PROGRESS && game.getCurrentPlayer().isAi()) {
-            MoveObject move = generateAiMove(game);
+            Move move = generateAiMove(game);
             processMove(game, move);
             switchTurn(game);
         }
@@ -79,13 +100,22 @@ public class GameService {
 
     public void playOwnMove(Game game) {
         if (game.getGameState() == GameState.IN_PROGRESS && !game.getCurrentPlayer().isAi()) {
-            MoveObject move = generateOwnMove(game);
+            Move move = generateOwnMove(game);
             processMove(game, move);
             switchTurn(game);
         }
     }
 
-    public boolean processMove(Game game, MoveObject move) {
+    public GameStats runRandomGame(Game game) {
+        while (game.getGameState() == GameState.IN_PROGRESS) {
+            Move move = RandomAi.getMove(game, true);
+            processMove(game, move);
+            switchTurn(game);
+        }
+        return new GameStats(game.getCurrentPlayer(), System.currentTimeMillis() - game.getBeginTime());
+    }
+
+    public boolean processMove(Game game, Move move) {
         PlayerColor playerColor = game.getCurrentPlayer().getColor();
         Tile tile = game.getBoard().getTile(move.getPiece().getX(), move.getPiece().getY());
         Tile targetTile = game.getBoard().getTile(move.getPiece().getX() + move.getMove().getX(playerColor),
@@ -107,11 +137,24 @@ public class GameService {
             return false;
         }
 
+        if (tile.getPiece() == null) {
+            System.out.println("Invalid move. No piece on tile.");
+        }
         Piece piece = tile.removePiece();
         targetTile.setPiece(piece);
 
         if (targetTile.isTempleReached() || removedPieceWasMaster) {
             game.setGameState(playerColor == PlayerColor.RED ? GameState.FINISHED : GameState.FINISHED);
+        }
+
+        ArrayList<Card> cards = playerColor == PlayerColor.RED ? game.getPlayerRedCards()
+                : game.getPlayerBlueCards();
+        for (int i = 0; i < cards.size(); i++) {
+            if (cards.get(i) == move.getCard()) {
+                cards.set(i, game.getNextCard());
+                game.setNextCard(move.getCard());
+                break;
+            }
         }
 
         return true;
@@ -125,25 +168,28 @@ public class GameService {
         }
     }
 
-    private MoveObject generateAiMove(Game game) {
+    private Move generateAiMove(Game game) {
+        Move move = null;
         switch (game.getCurrentPlayer().getAiType()) {
-            case RANDOM:
-                return RandomAi.getMove(game, game.getCurrentPlayer().getColor(), false);
-            case RANDOM_PRIOTIZING:
-                return RandomAi.getMove(game, game.getCurrentPlayer().getColor(), true);
-            case MCTS:
-            default:
-                return RandomAi.getMove(game, game.getCurrentPlayer().getColor(), false);
+            case RANDOM -> move = RandomAi.getMove(game, false);
+            case RANDOM_PRIOTIZING -> move = RandomAi.getMove(game, true);
+            case MCTS -> {
+                MCTS mcts = new MCTS();
+                move = mcts.uctSearch(game, true);
+            }
+            default -> move = RandomAi.getMove(game, false);
         }
+
+        return move;
     }
 
-    private MoveObject generateOwnMove(Game game) {
+    private Move generateOwnMove(Game game) {
         game.getBoard().printBoard();
         PlayerColor playerColor = game.getCurrentPlayer().getColor();
-        LinkedList<MoveObject> allPossibleMoves = MoveController.getAllPossibleMoves(game, playerColor);
+        LinkedList<Move> allPossibleMoves = MoveController.getAllPossibleMoves(game);
         System.out.println("Choose a move:");
         for (int i = 0; i < allPossibleMoves.size(); i++) {
-            MoveObject move = allPossibleMoves.get(i);
+            Move move = allPossibleMoves.get(i);
             System.out.println(i + ": " + move.capturesPiece() + ", Gegner: "
                     + (move.getCapturedPiece() != null ? move.getCapturedPiece().getName() : "null") + ",  Figure: "
                     + move.getPiece().getName()

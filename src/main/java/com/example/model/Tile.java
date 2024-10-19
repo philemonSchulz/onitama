@@ -1,5 +1,6 @@
 package com.example.model;
 
+import com.example.model.Piece.PieceType;
 import com.example.model.Player.PlayerColor;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -19,13 +20,6 @@ public class Tile {
         this.piece = piece;
     }
 
-    public Tile(Tile tile) {
-        this.x = tile.x;
-        this.y = tile.y;
-        this.templeColor = tile.templeColor;
-        this.piece = tile.piece == null ? null : new Piece(tile.getPiece());
-    }
-
     public void setPiece(Piece piece) {
         this.piece = piece;
         piece.setPosition(this.x, this.y);
@@ -39,7 +33,8 @@ public class Tile {
     }
 
     public boolean isTempleReached() {
-        return templeColor != null && piece != null && piece.getColor() != templeColor;
+        return templeColor != null && piece != null && piece.getColor() != templeColor
+                && piece.getType() == PieceType.MASTER;
     }
 
     public Piece getPiece() {

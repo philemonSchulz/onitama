@@ -47,6 +47,22 @@ public class Game {
         setFigures();
     }
 
+    public Game(Game game) {
+        this.gameId = game.gameId;
+        this.beginTime = game.beginTime;
+        this.turnStartTime = game.turnStartTime;
+        this.gameState = game.gameState;
+        this.board = new Board();
+        this.playerRed = game.playerRed;
+        this.playerBlue = game.playerBlue;
+        this.currentPlayer = game.currentPlayer;
+        this.playerRedCards = new ArrayList<>(game.playerRedCards);
+        this.playerBlueCards = new ArrayList<>(game.playerBlueCards);
+        this.playerRedPieces = copyPieces(game.playerRedPieces);
+        this.playerBluePieces = copyPieces(game.playerBluePieces);
+        this.nextCard = game.nextCard;
+    }
+
     public ArrayList<Piece> createFigures(PlayerColor playerColor) {
         ArrayList<Piece> pieces = new ArrayList<>();
         for (int i = 0; i < Board.BOARD_SIZE; i++) {
@@ -60,6 +76,16 @@ public class Game {
             }
         }
         return pieces;
+    }
+
+    public ArrayList<Piece> copyPieces(ArrayList<Piece> pieces) {
+        ArrayList<Piece> newPieces = new ArrayList<>();
+        for (Piece piece : pieces) {
+            Piece newPiece = new Piece(piece);
+            newPieces.add(newPiece);
+            board.getTile(piece.getX(), piece.getY()).setPiece(newPiece);
+        }
+        return newPieces;
     }
 
     public void setFigures() {
@@ -83,6 +109,10 @@ public class Game {
                 break;
             }
         }
+    }
+
+    public boolean isGameWon() {
+        return gameState == GameState.FINISHED;
     }
 
     public void setGameId(String id) {
@@ -178,12 +208,12 @@ public class Game {
     }
 
     @JsonProperty("playerRedCards")
-    public List<Card> getPlayerRedCards() {
+    public ArrayList<Card> getPlayerRedCards() {
         return playerRedCards;
     }
 
     @JsonProperty("playerBlueCards")
-    public List<Card> getPlayerBlueCards() {
+    public ArrayList<Card> getPlayerBlueCards() {
         return playerBlueCards;
     }
 

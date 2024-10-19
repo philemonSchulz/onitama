@@ -13,7 +13,7 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.web.client.RestTemplate;
 
 import com.example.model.Game;
-import com.example.model.MoveObject;
+import com.example.model.Move;
 import com.example.model.Player.AiType;
 import com.example.model.Player.PlayerColor;
 import com.example.service.GameService;
@@ -70,7 +70,7 @@ public class GameClient {
                         break;
                     }
                     if (checkIfMyTurn()) {
-                        MoveObject move = gameService.getMoveForServerGame(getGameState());
+                        Move move = gameService.getMoveForServerGame(getGameState());
                         if (move != null) {
                             submitMove(move);
                         }
@@ -181,13 +181,13 @@ public class GameClient {
         }
     }
 
-    public boolean submitMove(MoveObject move) {
+    public boolean submitMove(Move move) {
         String url = baseUrl + "/" + gameId + "/move?move=" + move + "&playerColor=" + playerColor;
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        HttpEntity<MoveObject> request = new HttpEntity<>(move, headers);
+        HttpEntity<Move> request = new HttpEntity<>(move, headers);
         ResponseEntity<String> response = restTemplate.exchange(
                 url,
                 HttpMethod.POST,

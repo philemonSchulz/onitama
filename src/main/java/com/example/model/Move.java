@@ -1,59 +1,44 @@
 package com.example.model;
 
-import com.example.model.Player.PlayerColor;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Move {
-    private int x;
-    private int y;
+    private Movement move;
+    private Piece piece;
+    private Piece capturedPiece;
+    private Card card;
 
     public Move() {
+        // Default constructor for deserialization
     }
 
     @JsonCreator
-    public Move(@JsonProperty("x") int x, @JsonProperty("y") int y) {
-        this.x = x;
-        this.y = y;
+    public Move(@JsonProperty("move") Movement move, @JsonProperty("piece") Piece piece,
+            @JsonProperty("capturedPiece") Piece capturedPiece, @JsonProperty("card") Card card) {
+        this.move = move;
+        this.piece = piece;
+        this.capturedPiece = capturedPiece;
+        this.card = card;
     }
 
-    // Getters and Setters for x and y
-    public int getX() {
-        return x;
+    public Movement getMove() {
+        return move;
     }
 
-    public void setX(int x) {
-        this.x = x;
+    public Piece getPiece() {
+        return piece;
     }
 
-    public int getY() {
-        return y;
+    public Piece getCapturedPiece() {
+        return capturedPiece;
     }
 
-    public void setY(int y) {
-        this.y = y;
+    public Card getCard() {
+        return card;
     }
 
-    // Moves are mirrored for the Blue Player
-    public int getX(PlayerColor playerColor) {
-        if (playerColor == PlayerColor.BLUE) {
-            return x * -1;
-        } else {
-            return x;
-        }
-    }
-
-    // Moves are mirrored for the Blue Player
-    public int getY(PlayerColor playerColor) {
-        if (playerColor == PlayerColor.BLUE) {
-            return y * -1;
-        } else {
-            return y;
-        }
-    }
-
-    @Override
-    public String toString() {
-        return "(" + x + ", " + y + ")";
+    public boolean capturesPiece() {
+        return capturedPiece != null;
     }
 }

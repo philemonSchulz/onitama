@@ -28,15 +28,6 @@ public class Board {
         this.board = board;
     }
 
-    public Board(Board board) {
-        this.board = new Tile[BOARD_SIZE][BOARD_SIZE];
-        for (int x = 0; x < BOARD_SIZE; x++) {
-            for (int y = 0; y < BOARD_SIZE; y++) {
-                this.board[x][y] = new Tile(board.getTile(x, y));
-            }
-        }
-    }
-
     public void setBoard(Tile[][] board) {
         this.board = board;
     }
@@ -73,6 +64,23 @@ public class Board {
     public String getBoardString() {
         StringBuilder sb = new StringBuilder();
         sb.append("-----------------------------\n");
+        for (int x = 0; x < BOARD_SIZE; x++) {
+            for (int y = 0; y < BOARD_SIZE; y++) {
+                sb.append("|");
+                if (board[x][y].getPiece() != null) {
+                    if (board[x][y].getPiece().getType() == PieceType.MASTER) {
+                        sb.append(board[x][y].getPiece().getName());
+                    } else {
+                        sb.append(board[x][y].getPiece().getName());
+                    }
+                } else {
+                    sb.append("  ");
+                }
+            }
+            sb.append("|\n");
+            sb.append("-----------------------------\n");
+            return sb.toString();
+        }
         for (int y = BOARD_SIZE - 1; y >= 0; y--) {
             sb.append("|");
             for (int x = 0; x < BOARD_SIZE; x++) {

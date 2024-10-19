@@ -21,7 +21,8 @@ public class OnitamaClient {
             switch (choice) {
                 case 1 -> playLocally();
                 case 2 -> connectToServer();
-                case 3 -> {
+                case 3 -> gameService.runCustomTests();
+                case 4 -> {
                     System.out.println("Exiting...");
                     return;
                 }
@@ -34,7 +35,8 @@ public class OnitamaClient {
         System.out.println("Welcome to Onitama");
         System.out.println("1. Play Locally");
         System.out.println("2. Connect to Server");
-        System.out.println("3. Exit");
+        System.out.println("3. Custom Tests");
+        System.out.println("4. Exit");
     }
 
     private int getChoice() {
