@@ -44,7 +44,24 @@ public class Game {
         this.nextCard = cards[4];
         this.playerRedPieces = createFigures(PlayerColor.RED);
         this.playerBluePieces = createFigures(PlayerColor.BLUE);
-        setFigures();
+        setPieces();
+    }
+
+    public Game(@JsonProperty("gameId") String gameId, boolean custom) {
+        this.gameId = gameId;
+        this.board = new Board();
+        Card[] cards = CardCreator.getFiveRandomCards();
+        this.playerRedCards = new ArrayList<>();
+        this.playerBlueCards = new ArrayList<>();
+        this.playerRedCards.add(cards[0]);
+        this.playerRedCards.add(cards[1]);
+        this.playerBlueCards.add(cards[2]);
+        this.playerBlueCards.add(cards[3]);
+        this.nextCard = cards[4];
+        this.playerRedPieces = createFigures(PlayerColor.RED);
+        this.playerBluePieces = createFigures(PlayerColor.BLUE);
+        setCustomPieces();
+        board.printBoard();
     }
 
     public Game(Game game) {
@@ -88,7 +105,7 @@ public class Game {
         return newPieces;
     }
 
-    public void setFigures() {
+    public void setPieces() {
         for (int x = 0; x < Board.BOARD_SIZE; x++) {
             for (int y = 0; y < Board.BOARD_SIZE; y++) {
                 if (y == 0) {
@@ -98,6 +115,23 @@ public class Game {
                 }
             }
         }
+    }
+
+    public void setCustomPieces() {
+        playerRedPieces.removeIf(p -> p.getName().equals("R2"));
+        playerRedPieces.removeIf(p -> p.getName().equals("R4"));
+        playerRedPieces.removeIf(p -> p.getName().equals("R5"));
+        playerBluePieces.removeIf(p -> p.getName().equals("B6"));
+        board.getTile(0, 0).setPiece(playerRedPieces.stream().filter(p -> p.getName().equals("R1")).findFirst().get());
+        board.getTile(0, 1).setPiece(playerRedPieces.stream().filter(p -> p.getName().equals("R6")).findFirst().get());
+        board.getTile(0, 2).setPiece(playerRedPieces.stream().filter(p -> p.getName().equals("R0")).findFirst().get());
+        board.getTile(3, 3).setPiece(playerRedPieces.stream().filter(p -> p.getName().equals("RM")).findFirst().get());
+        board.getTile(4, 0).setPiece(playerBluePieces.stream().filter(p -> p.getName().equals("B5")).findFirst().get());
+        board.getTile(6, 1).setPiece(playerBluePieces.stream().filter(p -> p.getName().equals("BM")).findFirst().get());
+        board.getTile(5, 4).setPiece(playerBluePieces.stream().filter(p -> p.getName().equals("B1")).findFirst().get());
+        board.getTile(1, 6).setPiece(playerBluePieces.stream().filter(p -> p.getName().equals("B2")).findFirst().get());
+        board.getTile(4, 6).setPiece(playerBluePieces.stream().filter(p -> p.getName().equals("B4")).findFirst().get());
+        board.getTile(6, 6).setPiece(playerBluePieces.stream().filter(p -> p.getName().equals("B0")).findFirst().get());
     }
 
     public void switchCards(Card card, PlayerColor playerColor) {

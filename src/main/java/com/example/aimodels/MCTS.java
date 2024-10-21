@@ -13,7 +13,7 @@ import com.example.model.Player.PlayerColor;
 import com.example.service.GameService;
 
 public class MCTS {
-    private final double CVALUE = 1.0;
+    private double CVALUE = 0.5;
     private Player currentPlayer;
 
     public class Node {
@@ -70,14 +70,15 @@ public class MCTS {
         }
     }
 
-    public Move uctSearch(Game game, boolean useTimeInsteadOfIterations) {
+    public Move uctSearch(Game game, boolean useTimeInsteadOfIterations, double cValue) {
+        this.CVALUE = cValue;
         this.currentPlayer = game.getCurrentPlayer();
         Node rootNode = new Node(new MctsState(new Game(game)), null);
         int iterations = 0;
 
         if (useTimeInsteadOfIterations) {
             long startTime = System.currentTimeMillis();
-            long timeLimit = 1500;
+            long timeLimit = 2000;
             while (System.currentTimeMillis() - startTime < timeLimit) {
                 Node node = treePolicy(rootNode);
                 int reward = defaultPolicy(node.getState());
@@ -91,13 +92,16 @@ public class MCTS {
                 backup(node, reward);
             }
         }
-        System.out.println("Iterations: " + iterations);
-        game.getBoard().printBoard();
-        for (Node child : rootNode.getChildren()) {
-            System.out.println("Move: " + child.getIncomingMove().getPiece().getName() + " "
-                    + child.getIncomingMove().getMove().getX(currentPlayer.getColor()) + " "
-                    + child.getIncomingMove().getMove().getY(currentPlayer.getColor()) + " Reward: " + child.getReward()
-                    + " Visits: " + child.getVisits());
+        if (false) {
+            System.out.println("Iterations: " + iterations);
+            game.getBoard().printBoard();
+            for (Node child : rootNode.getChildren()) {
+                System.out.println("Move: " + child.getIncomingMove().getPiece().getName() + " "
+                        + child.getIncomingMove().getMove().getX(currentPlayer.getColor()) + " "
+                        + child.getIncomingMove().getMove().getY(currentPlayer.getColor()) + "\t Reward: "
+                        + child.getReward()
+                        + "\t Visits: " + child.getVisits() + "\t Winrate: " + (child.getReward() / child.getVisits()));
+            }
         }
         // TODO: Nicht die beste quote, sondern node mit meisten Simulationen
         // zurückgeben
@@ -167,7 +171,7 @@ public class MCTS {
         public MctsState(Game game) {
             this.game = game;
             this.isTerminalState = game.isGameWon();
-            this.possibleMoves = MoveController.getAllPossibleMoves(game);
+            this.possibleMoves = MoveController.getAllPossibleMovesAsObject(game).getAllMoves();
             this.gameService = new GameService();
         }
 

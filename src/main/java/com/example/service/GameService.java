@@ -4,6 +4,11 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Scanner;
 import java.util.UUID;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import com.example.aimodels.MCTS;
 import com.example.aimodels.RandomAi;
@@ -75,13 +80,40 @@ public class GameService {
     public void runCustomTests() {
         int redwins = 0;
         int bluewins = 0;
-        for (int i = 0; i < 1; i++) {
-            GameStats stats = aiVsAi(AiType.MCTS, AiType.RANDOM_PRIOTIZING);
-            if (stats.getWinner().getColor() == PlayerColor.RED) {
-                redwins++;
-            } else {
-                bluewins++;
+        int overallMatches = 0;
+        int abortedMatches = 0;
+        long startTime = System.currentTimeMillis();
+        long duration = 90 * 60 * 1000;
+
+        ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+
+        while (System.currentTimeMillis() - startTime < duration) {
+            Future<GameStats> future = executorService.submit(() -> aiVsAi(AiType.MCTS, AiType.RANDOM_PRIOTIZING));
+
+            try {
+                // Wait for the AI vs AI match to complete, with a timeout of 3 minutes
+                GameStats stats = future.get(6, TimeUnit.MINUTES);
+                if (stats.getWinner().getColor() == PlayerColor.RED) {
+                    redwins++;
+                    overallMatches++;
+                    System.out.println("Red wins: " + redwins + ", Blue wins: " + bluewins + ", Overall: "
+                            + overallMatches + ", Aborted: " + abortedMatches);
+                } else {
+                    bluewins++;
+                    overallMatches++;
+                    System.out.println("Red wins: " + redwins + ", Blue wins: " + bluewins + ", Overall: "
+                            + overallMatches + ", Aborted: " + abortedMatches);
+                }
+            } catch (TimeoutException e) {
+                // Match took too long, so we cancel the task and move to the next one
+                future.cancel(true);
+                abortedMatches++;
+                overallMatches++;
+                System.out.println("A match took too long and was aborted.");
+            } catch (Exception e) {
+                e.printStackTrace();
             }
+
         }
         System.out.println("Red wins: " + redwins + ", Blue wins: " + bluewins);
     }
@@ -175,7 +207,8 @@ public class GameService {
             case RANDOM_PRIOTIZING -> move = RandomAi.getMove(game, true);
             case MCTS -> {
                 MCTS mcts = new MCTS();
-                move = mcts.uctSearch(game, true);
+                move = mcts.uctSearch(game, true,
+                        game.getCurrentPlayer().getColor() == PlayerColor.RED ? 0.7 : 0.7);
             }
             default -> move = RandomAi.getMove(game, false);
         }
@@ -186,7 +219,7 @@ public class GameService {
     private Move generateOwnMove(Game game) {
         game.getBoard().printBoard();
         PlayerColor playerColor = game.getCurrentPlayer().getColor();
-        LinkedList<Move> allPossibleMoves = MoveController.getAllPossibleMoves(game);
+        LinkedList<Move> allPossibleMoves = MoveController.getAllPossibleMovesAsObject(game).getAllMoves();
         System.out.println("Choose a move:");
         for (int i = 0; i < allPossibleMoves.size(); i++) {
             Move move = allPossibleMoves.get(i);
