@@ -5,26 +5,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.example.aimodels.MCTS.MctsState;
 import com.example.controller.MoveController;
-import com.example.model.Card;
 import com.example.model.Game;
-import com.example.model.GameStats;
-import com.example.model.Game.GameState;
+import com.example.model.Move;
+import com.example.model.Player;
 import com.example.model.Player.PlayerColor;
 import com.example.service.GameService;
-import com.example.model.Move;
-import com.example.model.Movement;
-import com.example.model.Piece;
-import com.example.model.Player;
 
 public class MCTSRave {
 
     private static final double CVALUE = 0.7;
-    private static final double RAVE_BIAS = 0.5;
+    private static final double RAVE_BIAS = 10;
 
     public Move raveUctSearch(Game game, boolean useTimeInsteadOfIterations) {
-        Node rootNode = new Node(null, new RaveMctsState(game), null);
+        Node rootNode = new Node(new MctsState(game), null, null);
 
         int iterations = 0;
         long startTime = System.currentTimeMillis();
@@ -33,10 +27,11 @@ public class MCTSRave {
         while (useTimeInsteadOfIterations ? System.currentTimeMillis() < startTime + timeLimit
                 : iterations < 1000) {
             Node selectedNode = treePolicy(rootNode);
-            SimulationResult result = defaultPolicy(selectedNode.getState());
+            SimulationResult result = defaultPolicy(selectedNode);
             backup(selectedNode, result.getReward(), result.getPlayedMoves());
             iterations++;
         }
+
         Player currentPlayer = game.getCurrentPlayer();
         if (true) {
             System.out.println("Iterations: " + iterations);
@@ -45,11 +40,16 @@ public class MCTSRave {
                 System.out.println("Move: " + child.getIncomingMove().getPiece().getName() + " "
                         + child.getIncomingMove().getMovement().getX(currentPlayer.getColor()) + " "
                         + child.getIncomingMove().getMovement().getY(currentPlayer.getColor()) + "\t Reward: "
-                        + child.getReward()
-                        + "\t Visits: " + child.getVisitCount() + "\t Winrate: "
-                        + (child.getReward() / child.getVisitCount()));
+                        + child.getValue()
+                        + "\t Visits: " + child.getVisits() + "\t Winrate: "
+                        + (child.getValue() / child.getVisits()));
             }
         }
+
+        Move bestMove = bestChild(rootNode, 0).getIncomingMove();
+        System.out.println("Best move: " + bestMove.getPiece().getName() + " "
+                + bestMove.getMovement().getX(currentPlayer.getColor()) + " "
+                + bestMove.getMovement().getY(currentPlayer.getColor()));
         return bestChild(rootNode, 0).incomingMove;
     }
 
@@ -68,29 +68,29 @@ public class MCTSRave {
 
     public Node expand(Node node) {
         Move move = node.getState().getUntriedMove();
-        return new Node(node, node.getState().getNexMctsState(move), move);
+        return new Node(node.getState().getNexMctsState(move), move, node);
     }
 
-    private Node bestChild(Node node, double cValue) {
+    public Node bestChild(Node node, double cValue) {
         Node bestChild = null;
         double bestValue = Double.NEGATIVE_INFINITY;
 
         for (Node child : node.getChildren()) {
-            double ucbValue = (child.getReward() / child.getVisitCount())
-                    + cValue * Math.sqrt(2 * Math.log(node.getVisitCount()) / child.getVisitCount());
+            double uctValue = (child.getValue() / child.getVisits())
+                    + cValue * Math.sqrt(2 * Math.log(node.getVisits()) / child.getVisits());
 
-            Move incommingMove = child.getIncomingMove();
-            double amafWinRate = child.getAMAFWinRate(incommingMove);
-            int amafVisitCount = child.getAmafVisits(incommingMove);
+            Move incomingMove = child.getIncomingMove();
+            double raveWinRate = child.getRaveWinRate(incomingMove);
+            int raveVisits = child.getRaveVisits(incomingMove);
 
-            double raveBias = (amafVisitCount > 0) ? (RAVE_BIAS * amafWinRate) + ((1 - RAVE_BIAS) * ucbValue)
-                    : ucbValue;
+            double raveBias = ((RAVE_BIAS - node.getVisits()) / RAVE_BIAS) > 0
+                    ? ((RAVE_BIAS - node.getVisits()) / RAVE_BIAS)
+                    : 0;
 
-            double uctRaveValue = raveBias
-                    + cValue * Math.sqrt(2 * Math.log(node.getVisitCount()) / child.getVisitCount());
+            double raveValue = raveVisits == 0 ? uctValue : raveBias * raveWinRate + (1 - raveBias) * uctValue;
 
-            if (uctRaveValue > bestValue) {
-                bestValue = uctRaveValue;
+            if (raveValue > bestValue) {
+                bestValue = raveValue;
                 bestChild = child;
             }
         }
@@ -98,72 +98,83 @@ public class MCTSRave {
         return bestChild;
     }
 
-    private SimulationResult defaultPolicy(RaveMctsState state) {
-        return state.runSimulation();
+    public SimulationResult defaultPolicy(Node node) {
+        return node.getState().runSimulation();
     }
 
-    private void backup(Node node, int reward, List<Move> playedMoves) {
+    public void backup(Node node, int reward, List<Move> playedMoves) {
         Node currentNode = node;
+        boolean flip = false;
         while (currentNode != null) {
-            currentNode.visitCount++;
-            currentNode.reward += reward;
-
-            for (Move move : playedMoves) {
-                currentNode.updateAMAF(move, reward);
-            }
-            if (reward == 0) {
-                reward = 1;
-            } else {
-                reward = 0;
+            currentNode.visits++;
+            currentNode.value += !flip ? 1 - reward : reward;
+            for (Node child : currentNode.getChildren()) {
+                for (Move move : playedMoves) {
+                    if (child.getIncomingMove().equals(move)) {
+                        child.updateAMAF(move, reward);
+                    }
+                }
             }
             currentNode = currentNode.getParent();
+            flip = !flip;
         }
     }
 
+    /*
+     * HERE GOES THE NODE CLASS
+     * 
+     * 
+     * 
+     * 
+     */
+
     public class Node {
-        private RaveMctsState state;
-        private Node parent;
-        private List<Node> children;
-        private Move incomingMove;
-        private int visitCount;
-        private double reward;
+        MctsState state;
+        Move incomingMove;
+        Node parent;
+        List<Node> children;
+        int visits;
+        double value;
+        Map<Move, Integer> raveVisits;
+        Map<Move, Double> raveValue;
 
-        private double raveScore;
-        private int raveVisits;
-
-        private Map<Move, Integer> amafVisits;
-        private Map<Move, Double> amafWins;
-
-        public Node(Node parent, RaveMctsState gameState, Move incomingMove) {
-            this.state = gameState;
+        public Node(MctsState state, Move incomingMove, Node parent) {
+            this.state = state;
+            this.incomingMove = incomingMove;
             this.parent = parent;
             this.children = new ArrayList<>();
-            this.visitCount = 0;
-            this.reward = 0;
-            this.raveScore = 0;
-            this.raveVisits = 0;
-            this.amafVisits = new HashMap<>();
-            this.amafWins = new HashMap<>();
-            this.incomingMove = incomingMove;
+            this.visits = 0;
+            this.value = 0;
+            this.raveVisits = new HashMap<>();
+            this.raveValue = new HashMap<>();
         }
 
-        public void addChild(Node childNode) {
-            this.children.add(childNode);
+        public void addChild(Node child) {
+            children.add(child);
         }
 
-        public void updateAMAF(Move move, double reward) {
-            this.amafVisits.put(move, this.amafVisits.getOrDefault(move, 0) + 1);
-            this.amafWins.put(move, this.amafWins.getOrDefault(move, 0.0) + reward);
+        public void updateAMAF(Move move, int reward) {
+            raveVisits.put(move, raveVisits.getOrDefault(move, 0) + 1);
+            raveValue.put(move, raveValue.getOrDefault(move, 0.0) + reward);
         }
 
-        public double getAMAFWinRate(Move move) {
-            if (!amafVisits.containsKey(move))
+        public double getRaveWinRate(Move move) {
+            if (!raveVisits.containsKey(move)) {
                 return 0;
-            return amafWins.get(move) / amafVisits.get(move);
+            }
+            return raveValue.get(move) / raveVisits.get(move);
         }
 
-        public int getAmafVisits(Move move) {
-            return amafVisits.getOrDefault(move, 0);
+        public int getRaveVisits(Move move) {
+            return raveVisits.getOrDefault(move, 0);
+        }
+
+        public MctsState getState() {
+            return state;
+        }
+
+        public Move getIncomingMove() {
+            return incomingMove;
         }
 
         public Node getParent() {
@@ -174,112 +185,54 @@ public class MCTSRave {
             return children;
         }
 
-        public RaveMctsState getState() {
-            return state;
+        public int getVisits() {
+            return visits;
         }
 
-        public Move getIncomingMove() {
-            return incomingMove;
-        }
-
-        public int getVisitCount() {
-            return visitCount;
-        }
-
-        public double getReward() {
-            return reward;
-        }
-
-        public double getRaveScore() {
-            return raveScore;
-        }
-
-        public int getRaveVisits() {
-            return raveVisits;
-        }
-
-        public Map<Move, Integer> getAmafVisits() {
-            return amafVisits;
-        }
-
-        public Map<Move, Double> getAmafWins() {
-            return amafWins;
+        public double getValue() {
+            return value;
         }
     }
 
-    public class RaveMctsState {
+    public class MctsState {
         private Game game;
         private boolean isTerminalState;
-        private List<Move> possibleMoves;
+        private List<Move> legalMoves;
         private GameService gameService;
-        private PlayerColor winner;
+        private PlayerColor winnerColor;
 
-        public RaveMctsState(Game game) {
+        public MctsState(Game game) {
             this.game = game;
-            this.isTerminalState = game.getGameState() == GameState.FINISHED;
-            this.possibleMoves = MoveController.getAllPossibleMovesAsObject(game).getAllMoves();
+            this.isTerminalState = game.getGameState() == Game.GameState.FINISHED;
+            this.legalMoves = MoveController.getAllPossibleMovesAsObject(game).getAllMoves();
             this.gameService = new GameService();
         }
 
         public SimulationResult runSimulation() {
-            SimulationResult result = gameService.runRandomRaveGame(new Game(game), new ArrayList<>());
-            return result;
-        }
-
-        public RaveMctsState getNexMctsState(Move move) {
-            Game newGame = new Game(game);
-            gameService.processMove(newGame, move);
-            gameService.switchTurn(newGame);
-            return new RaveMctsState(newGame);
-        }
-
-        public Move getUntriedMove() {
-            return possibleMoves.size() > 0 ? possibleMoves.remove(0) : null;
+            return gameService.runRandomRaveGame(new Game(game), new ArrayList<>());
         }
 
         public boolean isFullyExpanded() {
-            return possibleMoves.size() == 0;
+            return legalMoves.isEmpty();
         }
 
-        public Game getGame() {
-            return game;
+        public Move getUntriedMove() {
+            return !legalMoves.isEmpty() ? legalMoves.remove(0) : null;
+        }
+
+        public MctsState getNexMctsState(Move move) {
+            Game newGame = new Game(game);
+            gameService.processMove(newGame, move);
+            gameService.switchTurn(newGame);
+            return new MctsState(newGame);
         }
 
         public boolean isTerminalState() {
             return isTerminalState;
         }
 
-        public List<Move> getPossibleMoves() {
-            return possibleMoves;
+        public List<Move> getLegalMoves() {
+            return legalMoves;
         }
-
-        public GameService getGameService() {
-            return gameService;
-        }
-    }
-
-    public class RaveMove {
-        private Movement move;
-        private Piece piece;
-        private Card card;
-
-        public RaveMove(Movement move, Piece piece, Card card) {
-            this.move = move;
-            this.piece = piece;
-            this.card = card;
-        }
-
-        public Movement getMove() {
-            return move;
-        }
-
-        public Piece getPiece() {
-            return piece;
-        }
-
-        public Card getCard() {
-            return card;
-        }
-
     }
 }

@@ -13,6 +13,7 @@ import java.util.concurrent.TimeoutException;
 
 import com.example.aimodels.MCTS;
 import com.example.aimodels.MCTSRave;
+import com.example.aimodels.MCTSRave;
 import com.example.aimodels.RandomAi;
 import com.example.aimodels.SimulationResult;
 import com.example.controller.MoveController;
@@ -89,7 +90,7 @@ public class GameService {
         long duration = 90 * 60 * 1000;
 
         while (System.currentTimeMillis() - startTime < duration) {
-            GameStats stats = aiVsAi(AiType.MCTS, AiType.RANDOM_PRIOTIZING);
+            GameStats stats = aiVsAi(AiType.RAVE_MCTS, AiType.RANDOM_PRIOTIZING);
             if (stats.getWinner().getColor() == PlayerColor.RED) {
                 redwins++;
                 overallMatches++;
@@ -167,6 +168,9 @@ public class GameService {
 
     public SimulationResult runRandomRaveGame(Game game, List<Move> playedMoves) {
         PlayerColor intialPlayer = game.getCurrentPlayer().getColor();
+        if (game.getGameState() == GameState.FINISHED) {
+            return new SimulationResult(0, playedMoves);
+        }
         while (game.getGameState() == GameState.IN_PROGRESS) {
             Move move = RandomAi.getMove(game, true);
             processMove(game, move);
