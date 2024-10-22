@@ -1,5 +1,7 @@
 package com.example.model;
 
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -85,5 +87,24 @@ public class Piece {
 
     public void setY(Integer y) {
         this.y = y;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        Piece piece = (Piece) o;
+        return type == piece.type &&
+                color == piece.color &&
+                Objects.equals(name, piece.name) &&
+                Objects.equals(x, piece.x) &&
+                Objects.equals(y, piece.y);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(type, color, name, x, y);
     }
 }

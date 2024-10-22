@@ -122,6 +122,7 @@ public class GameClient {
             System.out.println("1. Random");
             System.out.println("2. Random Ai with priority to capturing moves");
             System.out.println("3. MCTS");
+            System.out.println("4. RAVE MCTS");
             choice = scanner.nextInt();
 
             while (choice < 1 || choice > 3) {
@@ -139,6 +140,9 @@ public class GameClient {
                     break;
                 case 3:
                     aiType = AiType.MCTS;
+                    break;
+                case 4:
+                    aiType = AiType.RAVE_MCTS;
                     break;
             }
 

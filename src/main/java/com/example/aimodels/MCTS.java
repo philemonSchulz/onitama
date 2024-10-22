@@ -92,19 +92,23 @@ public class MCTS {
                 backup(node, reward);
             }
         }
-        if (false) {
+        if (true) {
             System.out.println("Iterations: " + iterations);
             game.getBoard().printBoard();
             for (Node child : rootNode.getChildren()) {
                 System.out.println("Move: " + child.getIncomingMove().getPiece().getName() + " "
-                        + child.getIncomingMove().getMove().getX(currentPlayer.getColor()) + " "
-                        + child.getIncomingMove().getMove().getY(currentPlayer.getColor()) + "\t Reward: "
+                        + child.getIncomingMove().getMovement().getX(currentPlayer.getColor()) + " "
+                        + child.getIncomingMove().getMovement().getY(currentPlayer.getColor()) + "\t Reward: "
                         + child.getReward()
                         + "\t Visits: " + child.getVisits() + "\t Winrate: " + (child.getReward() / child.getVisits()));
             }
         }
         // TODO: Nicht die beste quote, sondern node mit meisten Simulationen
         // zurückgeben
+        Move bestMove = bestChild(rootNode, 0).getIncomingMove();
+        System.out.println("Best move: " + bestMove.getPiece().getName() + " "
+                + bestMove.getMovement().getX(currentPlayer.getColor()) + " "
+                + bestMove.getMovement().getY(currentPlayer.getColor()));
         return bestChild(rootNode, 0).getIncomingMove();
     }
 
@@ -150,13 +154,13 @@ public class MCTS {
 
     public void backup(Node node, int reward) {
         while (node != null) {
-            node.visits++;
-            node.reward += reward;
             if (reward == 0) {
                 reward = 1;
             } else {
                 reward = 0;
             }
+            node.visits++;
+            node.reward += reward;
             node = node.getParent();
         }
     }
@@ -176,7 +180,11 @@ public class MCTS {
         }
 
         public int runSimulation() {
-            GameStats gameStats = gameService.runRandomGame(new Game(game));
+            Game newGame = new Game(game);
+            if (game.getGameState() == GameState.FINISHED) {
+                return 0;
+            }
+            GameStats gameStats = gameService.runRandomGame(newGame);
             this.winner = gameStats.getWinner().getColor();
             return gameStats.getWinner().getColor() == game.getCurrentPlayer().getColor() ? 1 : 0;
         }
@@ -192,8 +200,8 @@ public class MCTS {
                 System.out.println("Move is null");
                 game.getBoard().printBoard();
             }
-            int x = move.getPiece().getX() + move.getMove().getX(game.getCurrentPlayer().getColor());
-            int y = move.getPiece().getY() + move.getMove().getY(game.getCurrentPlayer().getColor());
+            int x = move.getPiece().getX() + move.getMovement().getX(game.getCurrentPlayer().getColor());
+            int y = move.getPiece().getY() + move.getMovement().getY(game.getCurrentPlayer().getColor());
             if (x < 0 || x >= 7 || y < 0 || y >= 7) {
                 System.out.println("Move is out of bounds");
                 game.getBoard().printBoard();

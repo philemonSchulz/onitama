@@ -1,5 +1,7 @@
 package com.example.model;
 
+import java.util.Objects;
+
 import com.example.model.Player.PlayerColor;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -55,5 +57,20 @@ public class Movement {
     @Override
     public String toString() {
         return "(" + x + ", " + y + ")";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        Movement movement = (Movement) o;
+        return x == movement.x && y == movement.y;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(x, y);
     }
 }

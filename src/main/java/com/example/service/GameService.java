@@ -2,6 +2,7 @@ package com.example.service;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Scanner;
 import java.util.UUID;
 import java.util.concurrent.Executors;
@@ -11,7 +12,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import com.example.aimodels.MCTS;
+import com.example.aimodels.MCTSRave;
 import com.example.aimodels.RandomAi;
+import com.example.aimodels.SimulationResult;
 import com.example.controller.MoveController;
 import com.example.model.Card;
 import com.example.model.Game;
@@ -85,6 +88,21 @@ public class GameService {
         long startTime = System.currentTimeMillis();
         long duration = 90 * 60 * 1000;
 
+        while (System.currentTimeMillis() - startTime < duration) {
+            GameStats stats = aiVsAi(AiType.MCTS, AiType.RANDOM_PRIOTIZING);
+            if (stats.getWinner().getColor() == PlayerColor.RED) {
+                redwins++;
+                overallMatches++;
+                System.out.println("Red wins: " + redwins + ", Blue wins: " + bluewins + ", Overall: " + overallMatches
+                        + ", Aborted: " + abortedMatches);
+            } else {
+                bluewins++;
+                overallMatches++;
+                System.out.println("Red wins: " + redwins + ", Blue wins: " + bluewins + ", Overall: " + overallMatches
+                        + ", Aborted: " + abortedMatches);
+            }
+        }
+
         ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
 
         while (System.currentTimeMillis() - startTime < duration) {
@@ -147,11 +165,22 @@ public class GameService {
         return new GameStats(game.getCurrentPlayer(), System.currentTimeMillis() - game.getBeginTime());
     }
 
+    public SimulationResult runRandomRaveGame(Game game, List<Move> playedMoves) {
+        PlayerColor intialPlayer = game.getCurrentPlayer().getColor();
+        while (game.getGameState() == GameState.IN_PROGRESS) {
+            Move move = RandomAi.getMove(game, true);
+            processMove(game, move);
+            switchTurn(game);
+            playedMoves.add(move);
+        }
+        return new SimulationResult(game.getCurrentPlayer().getColor() == intialPlayer ? 1 : 0, playedMoves);
+    }
+
     public boolean processMove(Game game, Move move) {
         PlayerColor playerColor = game.getCurrentPlayer().getColor();
         Tile tile = game.getBoard().getTile(move.getPiece().getX(), move.getPiece().getY());
-        Tile targetTile = game.getBoard().getTile(move.getPiece().getX() + move.getMove().getX(playerColor),
-                move.getPiece().getY() + move.getMove().getY(playerColor));
+        Tile targetTile = game.getBoard().getTile(move.getPiece().getX() + move.getMovement().getX(playerColor),
+                move.getPiece().getY() + move.getMovement().getY(playerColor));
 
         boolean removedPieceWasMaster = false;
 
@@ -208,7 +237,11 @@ public class GameService {
             case MCTS -> {
                 MCTS mcts = new MCTS();
                 move = mcts.uctSearch(game, true,
-                        game.getCurrentPlayer().getColor() == PlayerColor.RED ? 0.7 : 0.7);
+                        game.getCurrentPlayer().getColor() == PlayerColor.RED ? 1 : 0.7);
+            }
+            case RAVE_MCTS -> {
+                MCTSRave raveMcts = new MCTSRave();
+                move = raveMcts.raveUctSearch(game, true);
             }
             default -> move = RandomAi.getMove(game, false);
         }
@@ -226,7 +259,7 @@ public class GameService {
             System.out.println(i + ": " + move.capturesPiece() + ", Gegner: "
                     + (move.getCapturedPiece() != null ? move.getCapturedPiece().getName() : "null") + ",  Figure: "
                     + move.getPiece().getName()
-                    + ", Move: " + move.getMove().getX(playerColor) + ", " + move.getMove().getY(playerColor));
+                    + ", Move: " + move.getMovement().getX(playerColor) + ", " + move.getMovement().getY(playerColor));
         }
         Scanner scanner = new Scanner(System.in);
         int moveIndex = scanner.nextInt();

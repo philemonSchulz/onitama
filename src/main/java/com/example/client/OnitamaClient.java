@@ -69,12 +69,14 @@ public class OnitamaClient {
         System.out.println("1. Random");
         System.out.println("2. Random Ai with priority to capturing moves");
         System.out.println("3. MCTS");
+        System.out.println("4. RAVE MCTS");
 
         int aiChoice = getChoice();
         return switch (aiChoice) {
             case 1 -> AiType.RANDOM;
             case 2 -> AiType.RANDOM_PRIOTIZING;
             case 3 -> AiType.MCTS;
+            case 4 -> AiType.RAVE_MCTS;
             default -> AiType.RANDOM;
         };
     }

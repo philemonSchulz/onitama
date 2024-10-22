@@ -1,6 +1,7 @@
 package com.example.model;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 import com.example.model.Player.PlayerColor;
@@ -60,5 +61,22 @@ public class Card {
             }
         }
         return allowedMoves;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        Card card = (Card) o;
+        return Objects.equals(name, card.name) &&
+                color == card.color &&
+                Objects.equals(moves, card.moves);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, color, moves);
     }
 }

@@ -1,13 +1,32 @@
 package com.example.model;
 
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Move {
-    private Movement move;
+    private Movement movement;
     private Piece piece;
     private Piece capturedPiece;
     private Card card;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        Move move = (Move) o;
+        return Objects.equals(this.movement, move.movement) &&
+                Objects.equals(this.card, move.card) &&
+                Objects.equals(this.piece, move.piece);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(movement, card, piece);
+    }
 
     public Move() {
         // Default constructor for deserialization
@@ -16,14 +35,14 @@ public class Move {
     @JsonCreator
     public Move(@JsonProperty("move") Movement move, @JsonProperty("piece") Piece piece,
             @JsonProperty("capturedPiece") Piece capturedPiece, @JsonProperty("card") Card card) {
-        this.move = move;
+        this.movement = move;
         this.piece = piece;
         this.capturedPiece = capturedPiece;
         this.card = card;
     }
 
-    public Movement getMove() {
-        return move;
+    public Movement getMovement() {
+        return movement;
     }
 
     public Piece getPiece() {
