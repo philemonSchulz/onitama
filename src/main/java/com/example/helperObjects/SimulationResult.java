@@ -1,4 +1,4 @@
-package com.example.aimodels;
+package com.example.helperObjects;
 
 import java.util.List;
 

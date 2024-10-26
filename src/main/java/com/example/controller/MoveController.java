@@ -2,6 +2,7 @@ package com.example.controller;
 
 import java.util.LinkedList;
 
+import com.example.helperObjects.PossibleMovesObject;
 import com.example.model.Card;
 import com.example.model.Game;
 import com.example.model.Movement;
@@ -10,7 +11,6 @@ import com.example.model.Piece;
 import com.example.model.Tile;
 import com.example.model.Piece.PieceType;
 import com.example.model.Player.PlayerColor;
-import com.example.model.PossibleMovesObject;
 
 public class MoveController {
 
@@ -32,9 +32,6 @@ public class MoveController {
 
         for (Piece piece : (isPlayerRed ? game.getPlayerRedPieces() : game.getPlayerBluePieces())) {
             for (Card card : (isPlayerRed ? game.getPlayerRedCards() : game.getPlayerBlueCards())) {
-                if (card.getMoves().size() == 0) {
-                    continue;
-                }
                 for (Movement move : card.getAllowedMoves(piece.getX(), piece.getY(), playerColor)) {
                     Tile targetTile = game.getBoard().getTile(piece.getX() + move.getX(playerColor),
                             piece.getY() + move.getY(playerColor));

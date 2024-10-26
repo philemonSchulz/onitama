@@ -1,6 +1,8 @@
-package com.example.model;
+package com.example.helperObjects;
 
 import java.util.LinkedList;
+
+import com.example.model.Move;
 
 public class PossibleMovesObject {
     private LinkedList<Move> winningMoves;

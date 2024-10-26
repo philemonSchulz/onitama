@@ -3,9 +3,9 @@ package com.example.aimodels;
 import java.util.LinkedList;
 
 import com.example.controller.MoveController;
+import com.example.helperObjects.PossibleMovesObject;
 import com.example.model.Game;
 import com.example.model.Move;
-import com.example.model.PossibleMovesObject;
 import com.example.model.Player.PlayerColor;
 
 public class RandomAi {

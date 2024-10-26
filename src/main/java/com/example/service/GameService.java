@@ -11,12 +11,12 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import com.example.aimodels.HeuristicAi;
 import com.example.aimodels.MCTS;
 import com.example.aimodels.MCTSRave;
-import com.example.aimodels.MCTSRave;
 import com.example.aimodels.RandomAi;
-import com.example.aimodels.SimulationResult;
 import com.example.controller.MoveController;
+import com.example.helperObjects.SimulationResult;
 import com.example.model.Card;
 import com.example.model.Game;
 import com.example.model.Player;
@@ -85,29 +85,44 @@ public class GameService {
         int redwins = 0;
         int bluewins = 0;
         int overallMatches = 0;
+        long startTime = System.currentTimeMillis();
+        long duration = 90 * 60 * 1000;
+        double gameDurations = 0;
+
+        while (System.currentTimeMillis() - startTime < duration) {
+            GameStats stats = aiVsAi(AiType.MCTS, AiType.HEURISTIC);
+            double gameDuration = Math.floor(stats.getDuration() / 1000);
+            gameDurations += gameDuration;
+            System.out.println("Game duration: " + gameDuration + "s" + "(" + gameDuration / 60 + "min)");
+            if (stats.getWinner().getColor() == PlayerColor.RED) {
+                redwins++;
+                overallMatches++;
+                System.out
+                        .println("Red wins: " + redwins + ", Blue wins: " + bluewins + ", Avg Duration: "
+                                + gameDurations / overallMatches);
+            } else {
+                bluewins++;
+                overallMatches++;
+                System.out
+                        .println("Red wins: " + redwins + ", Blue wins: " + bluewins + ", Avg Duration: "
+                                + gameDurations / overallMatches);
+            }
+        }
+        System.out.println("Red wins: " + redwins + ", Blue wins: " + bluewins);
+    }
+
+    public void runCustomTestsWithAbortLimit() {
+        int redwins = 0;
+        int bluewins = 0;
+        int overallMatches = 0;
         int abortedMatches = 0;
         long startTime = System.currentTimeMillis();
         long duration = 90 * 60 * 1000;
 
-        while (System.currentTimeMillis() - startTime < duration) {
-            GameStats stats = aiVsAi(AiType.RAVE_MCTS, AiType.RANDOM_PRIOTIZING);
-            if (stats.getWinner().getColor() == PlayerColor.RED) {
-                redwins++;
-                overallMatches++;
-                System.out.println("Red wins: " + redwins + ", Blue wins: " + bluewins + ", Overall: " + overallMatches
-                        + ", Aborted: " + abortedMatches);
-            } else {
-                bluewins++;
-                overallMatches++;
-                System.out.println("Red wins: " + redwins + ", Blue wins: " + bluewins + ", Overall: " + overallMatches
-                        + ", Aborted: " + abortedMatches);
-            }
-        }
-
         ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
 
         while (System.currentTimeMillis() - startTime < duration) {
-            Future<GameStats> future = executorService.submit(() -> aiVsAi(AiType.MCTS, AiType.RANDOM_PRIOTIZING));
+            Future<GameStats> future = executorService.submit(() -> aiVsAi(AiType.MCTS, AiType.MCTS));
 
             try {
                 // Wait for the AI vs AI match to complete, with a timeout of 3 minutes
@@ -238,10 +253,14 @@ public class GameService {
         switch (game.getCurrentPlayer().getAiType()) {
             case RANDOM -> move = RandomAi.getMove(game, false);
             case RANDOM_PRIOTIZING -> move = RandomAi.getMove(game, true);
+            case HEURISTIC -> {
+                HeuristicAi heuristicAi = new HeuristicAi(game);
+                move = heuristicAi.getMove();
+            }
             case MCTS -> {
                 MCTS mcts = new MCTS();
                 move = mcts.uctSearch(game, true,
-                        game.getCurrentPlayer().getColor() == PlayerColor.RED ? 1 : 0.7);
+                        game.getCurrentPlayer().getColor() == PlayerColor.RED ? Math.sqrt(2) : 1);
             }
             case RAVE_MCTS -> {
                 MCTSRave raveMcts = new MCTSRave();

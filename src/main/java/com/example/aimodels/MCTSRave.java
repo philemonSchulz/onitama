@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.example.controller.MoveController;
+import com.example.helperObjects.SimulationResult;
 import com.example.model.Game;
 import com.example.model.Move;
 import com.example.model.Player;
