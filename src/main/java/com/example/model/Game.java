@@ -26,6 +26,7 @@ public class Game {
     private ArrayList<Piece> playerRedPieces;
     private ArrayList<Piece> playerBluePieces;
     private Card nextCard;
+    private boolean winTroughTemple;
 
     public Game() {
     }
@@ -201,6 +202,10 @@ public class Game {
         this.nextCard = nextCard;
     }
 
+    public void setWinTroughTemple(boolean winTroughTemple) {
+        this.winTroughTemple = winTroughTemple;
+    }
+
     @JsonProperty("gameId")
     public String getGameId() {
         return gameId;
@@ -264,5 +269,10 @@ public class Game {
     @JsonProperty("nextCard")
     public Card getNextCard() {
         return nextCard;
+    }
+
+    @JsonProperty("winTroughTemple")
+    public boolean isWinTroughTemple() {
+        return winTroughTemple;
     }
 }

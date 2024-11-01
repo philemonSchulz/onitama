@@ -103,8 +103,6 @@ public class HeuristicAi {
         }
 
         // Evaluate the mobility for the current players pieces
-        int a = initialPossibleMoves.getAllMoves().size();
-        int b = MoveController.getAllPossibleMovesAsObject(gameCopy).getAllMoves().size();
         value += (MoveController.getAllPossibleMovesAsObject(gameCopy).getAllMoves().size()
                 - initialPossibleMoves.getAllMoves().size()) * MobilityWeight;
 

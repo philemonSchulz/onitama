@@ -5,14 +5,18 @@ import java.util.List;
 
 import com.example.controller.MoveController;
 import com.example.model.Game;
+import com.example.model.Game.GameState;
 import com.example.model.GameStats;
 import com.example.model.Move;
 import com.example.model.Player;
-import com.example.model.Game.GameState;
 import com.example.model.Player.PlayerColor;
 import com.example.service.GameService;
 
-public class MCTS {
+public class MCTSHeuristic {
+    public static final double PieceWeight = 3;
+    public static final double PositionWeight = 1;
+    public static final double MobilityWeight = 1;
+
     private double CVALUE = 0.5;
     private Player currentPlayer;
 
@@ -73,7 +77,7 @@ public class MCTS {
         }
     }
 
-    public Move uctSearch(Game game, boolean useTimeInsteadOfIterations, double cValue) {
+    public Move uctSearchWithHeurisitc(Game game, boolean useTimeInsteadOfIterations, double cValue) {
         this.CVALUE = cValue;
         this.currentPlayer = game.getCurrentPlayer();
         Node rootNode = new Node(new MctsState(new Game(game)), null);
@@ -109,14 +113,11 @@ public class MCTS {
         // TODO: Nicht die beste quote, sondern node mit meisten Simulationen
         // zurückgeben
         Move bestMove = bestChild(rootNode, 0).getIncomingMove();
-        if (false) {
-            System.out.println("Best move: " + bestMove.getPiece().getName() + " "
-                    + bestMove.getMovement().getX(currentPlayer.getColor()) + " "
-                    + bestMove.getMovement().getY(currentPlayer.getColor()));
-            System.out.println("Avg Duration: " + duration / (durationCounter / 1));
-        }
-
-        return bestMove;
+        System.out.println("Best move: " + bestMove.getPiece().getName() + " "
+                + bestMove.getMovement().getX(currentPlayer.getColor()) + " "
+                + bestMove.getMovement().getY(currentPlayer.getColor()));
+        System.out.println("Average duration: " + duration / (durationCounter / 1));
+        return bestChild(rootNode, 0).getIncomingMove();
     }
 
     public Node treePolicy(Node node) {
@@ -177,7 +178,6 @@ public class MCTS {
         private boolean isTerminalState;
         private List<Move> possibleMoves;
         private GameService gameService;
-        private PlayerColor winner;
 
         public MctsState(Game game) {
             this.game = game;
@@ -191,10 +191,9 @@ public class MCTS {
             if (game.getGameState() == GameState.FINISHED) {
                 return 0;
             }
-            GameStats gameStats = gameService.runRandomGame(newGame);
+            GameStats gameStats = gameService.runRandomHeuristicGame(newGame);
             duration += gameStats.getDuration();
             durationCounter++;
-            this.winner = gameStats.getWinner().getColor();
             return gameStats.getWinner().getColor() == game.getCurrentPlayer().getColor() ? 1 : 0;
         }
 
@@ -244,5 +243,4 @@ public class MCTS {
             return gameService;
         }
     }
-
 }

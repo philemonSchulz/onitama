@@ -12,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import com.example.aimodels.HeuristicAi;
+import com.example.aimodels.MCTSHeuristic;
 import com.example.aimodels.MCTS;
 import com.example.aimodels.MCTSRave;
 import com.example.aimodels.RandomAi;
@@ -64,10 +65,14 @@ public class GameService {
         while (game.getGameState() == GameState.IN_PROGRESS) {
             playAiMove(game);
         }
+        PlayerColor winner = game.getCurrentPlayer().getColor();
         if (game.getGameState() == GameState.FINISHED) {
-            System.out.println("Game finished. Winner: " + game.getCurrentPlayer().getColor());
+            System.out.println("Game finished. Winner: " + winner);
         }
-        return new GameStats(game.getCurrentPlayer(), System.currentTimeMillis() - game.getBeginTime());
+        return new GameStats(game.getCurrentPlayer(), System.currentTimeMillis() - game.getBeginTime(),
+                winner == PlayerColor.RED ? game.getPlayerRedPieces().size() : game.getPlayerBluePieces().size(),
+                winner == PlayerColor.RED ? game.getPlayerBluePieces().size() : game.getPlayerRedPieces().size(),
+                game.isWinTroughTemple());
     }
 
     public Move getMoveForServerGame(Game game) {
@@ -86,20 +91,36 @@ public class GameService {
         int bluewins = 0;
         int overallMatches = 0;
         long startTime = System.currentTimeMillis();
-        long duration = 90 * 60 * 1000;
+        long duration = 120 * 60 * 1000;
         double gameDurations = 0;
+        double winnerPieces = 0;
+        double loserPieces = 0;
+        double templeWins = 0;
 
         while (System.currentTimeMillis() - startTime < duration) {
-            GameStats stats = aiVsAi(AiType.MCTS, AiType.HEURISTIC);
+            GameStats stats = aiVsAi(AiType.MCTS, AiType.RANDOM_PRIOTIZING);
             double gameDuration = Math.floor(stats.getDuration() / 1000);
             gameDurations += gameDuration;
-            System.out.println("Game duration: " + gameDuration + "s" + "(" + gameDuration / 60 + "min)");
+            winnerPieces += stats.getPieceCountWinner();
+            loserPieces += stats.getPieceCountLoser();
+            if (stats.isWinThroughTemple()) {
+                templeWins++;
+            }
+
+            System.out.println("Game duration: " + gameDuration + "s" + "(" + gameDuration / 60
+                    + "min), Winner pieces: "
+                    + stats.getPieceCountWinner() + ", Loser pieces: " + stats.getPieceCountLoser() + ", Temple win: "
+                    + stats.isWinThroughTemple());
+
             if (stats.getWinner().getColor() == PlayerColor.RED) {
                 redwins++;
                 overallMatches++;
                 System.out
                         .println("Red wins: " + redwins + ", Blue wins: " + bluewins + ", Avg Duration: "
-                                + gameDurations / overallMatches);
+                                + gameDurations / overallMatches + ", Avg. Winner Pieces: "
+                                + winnerPieces / overallMatches
+                                + ", Avg. Loser Pieces: " + loserPieces / overallMatches + ", Avg. Temple Wins: "
+                                + templeWins / overallMatches);
             } else {
                 bluewins++;
                 overallMatches++;
@@ -107,6 +128,7 @@ public class GameService {
                         .println("Red wins: " + redwins + ", Blue wins: " + bluewins + ", Avg Duration: "
                                 + gameDurations / overallMatches);
             }
+            System.out.println("");
         }
         System.out.println("Red wins: " + redwins + ", Blue wins: " + bluewins);
     }
@@ -173,12 +195,14 @@ public class GameService {
     }
 
     public GameStats runRandomGame(Game game) {
+        long currentTime = System.currentTimeMillis();
         while (game.getGameState() == GameState.IN_PROGRESS) {
             Move move = RandomAi.getMove(game, true);
             processMove(game, move);
             switchTurn(game);
         }
-        return new GameStats(game.getCurrentPlayer(), System.currentTimeMillis() - game.getBeginTime());
+
+        return new GameStats(game.getCurrentPlayer(), System.currentTimeMillis() - currentTime);
     }
 
     public SimulationResult runRandomRaveGame(Game game, List<Move> playedMoves) {
@@ -193,6 +217,30 @@ public class GameService {
             playedMoves.add(move);
         }
         return new SimulationResult(game.getCurrentPlayer().getColor() == intialPlayer ? 1 : 0, playedMoves);
+    }
+
+    public GameStats runRandomHeuristicGame(Game game) {
+        PlayerColor initialPlayer = game.getCurrentPlayer().getColor() == PlayerColor.RED ? PlayerColor.BLUE
+                : PlayerColor.RED;
+
+        long currentTime = System.currentTimeMillis();
+        int iterations = 0;
+
+        while (game.getGameState() == GameState.IN_PROGRESS && iterations < 30) {
+            if (game.getCurrentPlayer().getColor() == initialPlayer) {
+                Move move = new HeuristicAi(game).getMove();
+                processMove(game, move);
+            } else {
+                Move move = RandomAi.getMove(game, true);
+                processMove(game, move);
+            }
+            switchTurn(game);
+            iterations++;
+        }
+        if (game.getGameState() == GameState.IN_PROGRESS) {
+            return new GameStats(evaluateWinnerBasedOnGame(game), System.currentTimeMillis() - currentTime);
+        }
+        return new GameStats(game.getCurrentPlayer(), iterations++);
     }
 
     public boolean processMove(Game game, Move move) {
@@ -223,8 +271,12 @@ public class GameService {
         Piece piece = tile.removePiece();
         targetTile.setPiece(piece);
 
-        if (targetTile.isTempleReached() || removedPieceWasMaster) {
-            game.setGameState(playerColor == PlayerColor.RED ? GameState.FINISHED : GameState.FINISHED);
+        if (targetTile.isTempleReached()) {
+            game.setGameState(GameState.FINISHED);
+            game.setWinTroughTemple(true);
+        } else if (removedPieceWasMaster) {
+            game.setGameState(GameState.FINISHED);
+            game.setWinTroughTemple(false);
         }
 
         ArrayList<Card> cards = playerColor == PlayerColor.RED ? game.getPlayerRedCards()
@@ -260,11 +312,15 @@ public class GameService {
             case MCTS -> {
                 MCTS mcts = new MCTS();
                 move = mcts.uctSearch(game, true,
-                        game.getCurrentPlayer().getColor() == PlayerColor.RED ? Math.sqrt(2) : 1);
+                        game.getCurrentPlayer().getColor() == PlayerColor.RED ? Math.sqrt(2) : Math.sqrt(2));
             }
             case RAVE_MCTS -> {
                 MCTSRave raveMcts = new MCTSRave();
                 move = raveMcts.raveUctSearch(game, true);
+            }
+            case HEURISTIC_MCTS -> {
+                MCTSHeuristic heuristicMcts = new MCTSHeuristic();
+                move = heuristicMcts.uctSearchWithHeurisitc(game, true, 1);
             }
             default -> move = RandomAi.getMove(game, false);
         }
@@ -301,5 +357,76 @@ public class GameService {
     public boolean hasTimeExpired(Game game) {
         long elapsedTime = System.currentTimeMillis() - game.getTurnStartTime();
         return elapsedTime > 30000;
+    }
+
+    public Player evaluateWinnerBasedOnGame(Game game) {
+        double redValue = game.getPlayerRedPieces().size() * MCTSHeuristic.PieceWeight;
+        double blueValue = game.getPlayerBluePieces().size() * MCTSHeuristic.PieceWeight;
+
+        for (Piece piece : game.getPlayerRedPieces()) {
+            int helper = 0;
+            if (piece.getX() == 0 || piece.getX() == 6) {
+                helper++;
+            }
+            if (piece.getY() == 0 || piece.getY() == 6) {
+                helper++;
+            }
+            switch (helper) {
+                case 0:
+                    redValue += (1 * MCTSHeuristic.PositionWeight);
+                    break;
+                case 1:
+                    redValue -= (1 * MCTSHeuristic.PositionWeight);
+                    break;
+                case 2:
+                    redValue -= (2 * MCTSHeuristic.PositionWeight);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        for (Piece piece : game.getPlayerBluePieces()) {
+            int helper = 0;
+            if (piece.getX() == 0 || piece.getX() == 6) {
+                helper++;
+            }
+            if (piece.getY() == 0 || piece.getY() == 6) {
+                helper++;
+            }
+            switch (helper) {
+                case 0:
+                    blueValue += (1 * MCTSHeuristic.PositionWeight);
+                    break;
+                case 1:
+                    blueValue -= (1 * MCTSHeuristic.PositionWeight);
+                    break;
+                case 2:
+                    blueValue -= (2 * MCTSHeuristic.PositionWeight);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        if (game.getCurrentPlayer().getColor() == PlayerColor.RED) {
+            redValue += MoveController.getAllPossibleMovesAsObject(game).getAllMoves().size()
+                    * MCTSHeuristic.MobilityWeight;
+            switchTurn(game);
+            blueValue += MoveController.getAllPossibleMovesAsObject(game).getAllMoves().size()
+                    * MCTSHeuristic.MobilityWeight;
+        } else {
+            blueValue += MoveController.getAllPossibleMovesAsObject(game).getAllMoves().size()
+                    * MCTSHeuristic.MobilityWeight;
+            switchTurn(game);
+            redValue += MoveController.getAllPossibleMovesAsObject(game).getAllMoves().size()
+                    * MCTSHeuristic.MobilityWeight;
+        }
+
+        if (redValue > blueValue) {
+            return game.getPlayerRed();
+        } else {
+            return game.getPlayerBlue();
+        }
     }
 }
