@@ -21,7 +21,7 @@ public class OnitamaClient {
             switch (choice) {
                 case 1 -> playLocally();
                 case 2 -> connectToServer();
-                case 3 -> gameService.runCustomTests();
+                case 3 -> gameService.dayTest();
                 case 4 -> {
                     System.out.println("Exiting...");
                     return;

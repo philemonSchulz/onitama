@@ -1,5 +1,8 @@
 package com.example.service;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -31,6 +34,11 @@ import com.example.model.Player.PlayerColor;
 import com.example.model.Tile;
 
 public class GameService {
+    private double cValueA = 0.7;
+    private double cValueB = 1;
+    private double biasA = 100;
+    private double biasB = 300;
+
     public boolean playerVsAi(AiType aiType) {
         Game game = new Game(UUID.randomUUID().toString());
         game.setPlayerRed(new Player(PlayerColor.RED, null));
@@ -62,6 +70,8 @@ public class GameService {
         game.setCurrentPlayer(game.getNextCard().getColor() == Player.PlayerColor.RED ? game.getPlayerRed()
                 : game.getPlayerBlue());
 
+        PlayerColor startingPlayer = game.getCurrentPlayer().getColor();
+
         while (game.getGameState() == GameState.IN_PROGRESS) {
             playAiMove(game);
         }
@@ -72,7 +82,7 @@ public class GameService {
         return new GameStats(game.getCurrentPlayer(), System.currentTimeMillis() - game.getBeginTime(),
                 winner == PlayerColor.RED ? game.getPlayerRedPieces().size() : game.getPlayerBluePieces().size(),
                 winner == PlayerColor.RED ? game.getPlayerBluePieces().size() : game.getPlayerRedPieces().size(),
-                game.isWinTroughTemple());
+                game.isWinTroughTemple(), startingPlayer);
     }
 
     public Move getMoveForServerGame(Game game) {
@@ -91,18 +101,22 @@ public class GameService {
         int bluewins = 0;
         int overallMatches = 0;
         long startTime = System.currentTimeMillis();
-        long duration = 120 * 60 * 1000;
+        long duration = 240 * 60 * 1000;
         double gameDurations = 0;
         double winnerPieces = 0;
         double loserPieces = 0;
         double templeWins = 0;
+        double winnerIsStartingPlayer = 0;
 
         while (System.currentTimeMillis() - startTime < duration) {
-            GameStats stats = aiVsAi(AiType.MCTS, AiType.RANDOM_PRIOTIZING);
+            GameStats stats = aiVsAi(AiType.RAVE_MCTS, AiType.RAVE_MCTS);
             double gameDuration = Math.floor(stats.getDuration() / 1000);
             gameDurations += gameDuration;
             winnerPieces += stats.getPieceCountWinner();
             loserPieces += stats.getPieceCountLoser();
+            if (stats.getStartingColor() == stats.getWinner().getColor()) {
+                winnerIsStartingPlayer++;
+            }
             if (stats.isWinThroughTemple()) {
                 templeWins++;
             }
@@ -110,7 +124,7 @@ public class GameService {
             System.out.println("Game duration: " + gameDuration + "s" + "(" + gameDuration / 60
                     + "min), Winner pieces: "
                     + stats.getPieceCountWinner() + ", Loser pieces: " + stats.getPieceCountLoser() + ", Temple win: "
-                    + stats.isWinThroughTemple());
+                    + stats.isWinThroughTemple() + ", Starting color: " + stats.getStartingColor());
 
             if (stats.getWinner().getColor() == PlayerColor.RED) {
                 redwins++;
@@ -120,58 +134,211 @@ public class GameService {
                                 + gameDurations / overallMatches + ", Avg. Winner Pieces: "
                                 + winnerPieces / overallMatches
                                 + ", Avg. Loser Pieces: " + loserPieces / overallMatches + ", Avg. Temple Wins: "
-                                + templeWins / overallMatches);
+                                + templeWins / overallMatches + ", Avg. Winner is Starting Player: "
+                                + winnerIsStartingPlayer / overallMatches);
             } else {
                 bluewins++;
                 overallMatches++;
                 System.out
                         .println("Red wins: " + redwins + ", Blue wins: " + bluewins + ", Avg Duration: "
-                                + gameDurations / overallMatches);
+                                + gameDurations / overallMatches + ", Avg. Winner Pieces: "
+                                + winnerPieces / overallMatches
+                                + ", Avg. Loser Pieces: " + loserPieces / overallMatches + ", Avg. Temple Wins: "
+                                + templeWins / overallMatches + ", Avg. Winner is Starting Player: "
+                                + winnerIsStartingPlayer / overallMatches);
             }
             System.out.println("");
         }
         System.out.println("Red wins: " + redwins + ", Blue wins: " + bluewins);
     }
 
+    public void dayTest() {
+        runGames(360 * 60 * 1000);
+        this.biasA = 300;
+        this.biasB = 500;
+        runGames(360 * 60 * 1000);
+        this.biasA = 200;
+        this.biasB = 300;
+        runGames(360 * 60 * 1000);
+        this.biasA = 300;
+        this.biasB = 400;
+        runGames(360 * 60 * 1000);
+    }
+
     public void runCustomTestsWithAbortLimit() {
         int redwins = 0;
         int bluewins = 0;
         int overallMatches = 0;
-        int abortedMatches = 0;
         long startTime = System.currentTimeMillis();
-        long duration = 90 * 60 * 1000;
-
-        ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+        long duration = 120 * 60 * 1000;
+        double gameDurations = 0;
+        double winnerPieces = 0;
+        double loserPieces = 0;
+        double templeWins = 0;
+        double winnerIsStartingPlayer = 0;
+        int abortedMatches = 0;
 
         while (System.currentTimeMillis() - startTime < duration) {
-            Future<GameStats> future = executorService.submit(() -> aiVsAi(AiType.MCTS, AiType.MCTS));
+            ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+            Future<GameStats> future = executorService.submit(() -> aiVsAi(AiType.MCTS, AiType.RAVE_MCTS));
 
             try {
                 // Wait for the AI vs AI match to complete, with a timeout of 3 minutes
-                GameStats stats = future.get(6, TimeUnit.MINUTES);
+                GameStats stats = future.get(10, TimeUnit.MINUTES);
+                double gameDuration = Math.floor(stats.getDuration() / 1000);
+                gameDurations += gameDuration;
+                winnerPieces += stats.getPieceCountWinner();
+                loserPieces += stats.getPieceCountLoser();
+                if (stats.getStartingColor() == stats.getWinner().getColor()) {
+                    winnerIsStartingPlayer++;
+                }
+                if (stats.isWinThroughTemple()) {
+                    templeWins++;
+                }
+
+                System.out.println("Game duration: " + gameDuration + "s" + "(" + gameDuration / 60
+                        + "min), Winner pieces: "
+                        + stats.getPieceCountWinner() + ", Loser pieces: " + stats.getPieceCountLoser()
+                        + ", Temple win: "
+                        + stats.isWinThroughTemple() + ", Starting color: " + stats.getStartingColor());
+
                 if (stats.getWinner().getColor() == PlayerColor.RED) {
                     redwins++;
                     overallMatches++;
-                    System.out.println("Red wins: " + redwins + ", Blue wins: " + bluewins + ", Overall: "
-                            + overallMatches + ", Aborted: " + abortedMatches);
+                    System.out
+                            .println("Red wins: " + redwins + ", Blue wins: " + bluewins + ", Avg Duration: "
+                                    + gameDurations / overallMatches + ", Avg. Winner Pieces: "
+                                    + winnerPieces / overallMatches
+                                    + ", Avg. Loser Pieces: " + loserPieces / overallMatches + ", Avg. Temple Wins: "
+                                    + templeWins / overallMatches + ", Avg. Winner is Starting Player: "
+                                    + winnerIsStartingPlayer / overallMatches + ", Aborted Matches: " + abortedMatches);
                 } else {
                     bluewins++;
                     overallMatches++;
-                    System.out.println("Red wins: " + redwins + ", Blue wins: " + bluewins + ", Overall: "
-                            + overallMatches + ", Aborted: " + abortedMatches);
+                    System.out
+                            .println("Red wins: " + redwins + ", Blue wins: " + bluewins + ", Avg Duration: "
+                                    + gameDurations / overallMatches + ", Avg. Winner Pieces: "
+                                    + winnerPieces / overallMatches
+                                    + ", Avg. Loser Pieces: " + loserPieces / overallMatches + ", Avg. Temple Wins: "
+                                    + templeWins / overallMatches + ", Avg. Winner is Starting Player: "
+                                    + winnerIsStartingPlayer / overallMatches + ", Aborted Matches: " + abortedMatches);
                 }
+                System.out.println("");
             } catch (TimeoutException e) {
                 // Match took too long, so we cancel the task and move to the next one
+
                 future.cancel(true);
                 abortedMatches++;
                 overallMatches++;
                 System.out.println("A match took too long and was aborted.");
             } catch (Exception e) {
                 e.printStackTrace();
+            } finally {
+                executorService.shutdown();
             }
 
         }
         System.out.println("Red wins: " + redwins + ", Blue wins: " + bluewins);
+    }
+
+    public void runGames(long duration) {
+        double gameDurations = 0;
+        double winnerPieces = 0;
+        double loserPieces = 0;
+        double templeWins = 0;
+        double winnerIsStartingPlayer = 0;
+        int abortedMatches = 0;
+        int redwins = 0;
+        int bluewins = 0;
+        int overallMatches = 0;
+
+        long startTime = System.currentTimeMillis();
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("rave_stats.txt", true))) {
+            while (System.currentTimeMillis() - startTime < duration) {
+                ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+                Future<GameStats> future = executorService.submit(() -> aiVsAi(AiType.RAVE_MCTS, AiType.RAVE_MCTS));
+
+                try {
+                    // Wait for the AI vs AI match to complete, with a timeout of 10 minutes
+                    GameStats stats = future.get(10, TimeUnit.MINUTES);
+                    double gameDuration = Math.floor(stats.getDuration() / 1000);
+                    gameDurations += gameDuration;
+                    winnerPieces += stats.getPieceCountWinner();
+                    loserPieces += stats.getPieceCountLoser();
+                    if (stats.getStartingColor() == stats.getWinner().getColor()) {
+                        winnerIsStartingPlayer++;
+                    }
+                    if (stats.isWinThroughTemple()) {
+                        templeWins++;
+                    }
+
+                    String result = "Game duration: " + gameDuration + "s" + "(" + gameDuration / 60
+                            + "min), Winner pieces: " + stats.getPieceCountWinner() + ", Loser pieces: "
+                            + stats.getPieceCountLoser() + ", Temple win: " + stats.isWinThroughTemple()
+                            + ", Starting color: " + stats.getStartingColor();
+
+                    writer.write(result);
+                    writer.newLine();
+
+                    if (stats.getWinner().getColor() == PlayerColor.RED) {
+                        redwins++;
+                    } else {
+                        bluewins++;
+                    }
+                    overallMatches++;
+
+                    String summary = "Red wins: " + redwins + ", Blue wins: " + bluewins + ", Avg Duration: "
+                            + gameDurations / overallMatches + ", Avg. Winner Pieces: "
+                            + winnerPieces / overallMatches + ", Avg. Loser Pieces: " + loserPieces / overallMatches
+                            + ", Avg. Temple Wins: " + templeWins / overallMatches
+                            + ", Avg. Winner is Starting Player: "
+                            + winnerIsStartingPlayer / overallMatches + ", Aborted Matches: " + abortedMatches;
+
+                    writer.write(summary);
+                    writer.newLine();
+                    writer.newLine();
+                } catch (TimeoutException e) {
+                    // Match took too long, so we cancel the task and move to the next one
+                    future.cancel(true);
+                    abortedMatches++;
+                    overallMatches++;
+                    writer.write("A match took too long and was aborted.");
+                    writer.newLine();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    executorService.shutdown();
+                }
+            }
+            writer.write("Red wins: " + redwins + ", Blue wins: " + bluewins);
+            writer.newLine();
+            writer.write(
+                    "-----------------------------------------------------------------------------------------------------------------");
+            writer.newLine();
+            writer.write(
+                    "-----------------------------------------------------------------------------------------------------------------");
+            writer.newLine();
+            writer.write(
+                    "-----------------------------------------------------------------------------------------------------------------");
+            writer.newLine();
+            writer.write(
+                    "-----------------------------------------------------------------------------------------------------------------");
+            writer.newLine();
+            writer.write(
+                    "-----------------------------------------------------------------------------------------------------------------");
+            writer.newLine();
+            writer.write(
+                    "-----------------------------------------------------------------------------------------------------------------");
+            writer.newLine();
+            writer.write(
+                    "-----------------------------------------------------------------------------------------------------------------");
+            writer.newLine();
+            writer.newLine();
+            writer.newLine();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /*
@@ -228,7 +395,7 @@ public class GameService {
 
         while (game.getGameState() == GameState.IN_PROGRESS && iterations < 30) {
             if (game.getCurrentPlayer().getColor() == initialPlayer) {
-                Move move = new HeuristicAi(game).getMove();
+                Move move = new HeuristicAi(game).getMove(1, 1, 1);
                 processMove(game, move);
             } else {
                 Move move = RandomAi.getMove(game, true);
@@ -307,16 +474,19 @@ public class GameService {
             case RANDOM_PRIOTIZING -> move = RandomAi.getMove(game, true);
             case HEURISTIC -> {
                 HeuristicAi heuristicAi = new HeuristicAi(game);
-                move = heuristicAi.getMove();
+                move = heuristicAi.getMove(game.getCurrentPlayer().getColor() == PlayerColor.RED ? 1 : 1,
+                        game.getCurrentPlayer().getColor() == PlayerColor.RED ? 1 : 1,
+                        game.getCurrentPlayer().getColor() == PlayerColor.RED ? 1 : 1);
             }
             case MCTS -> {
                 MCTS mcts = new MCTS();
                 move = mcts.uctSearch(game, true,
-                        game.getCurrentPlayer().getColor() == PlayerColor.RED ? Math.sqrt(2) : Math.sqrt(2));
+                        game.getCurrentPlayer().getColor() == PlayerColor.RED ? cValueA : cValueB);
             }
             case RAVE_MCTS -> {
                 MCTSRave raveMcts = new MCTSRave();
-                move = raveMcts.raveUctSearch(game, true);
+                move = raveMcts.raveUctSearch(game, true,
+                        game.getCurrentPlayer().getColor() == PlayerColor.RED ? biasA : biasB);
             }
             case HEURISTIC_MCTS -> {
                 MCTSHeuristic heuristicMcts = new MCTSHeuristic();

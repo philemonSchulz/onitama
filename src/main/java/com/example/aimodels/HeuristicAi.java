@@ -1,6 +1,8 @@
 package com.example.aimodels;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.example.controller.MoveController;
@@ -12,9 +14,9 @@ import com.example.model.Player.PlayerColor;
 import com.example.service.GameService;
 
 public class HeuristicAi {
-    private static final double PieceWeight = 1;
-    private static final double PositionWeight = 1;
-    private static final double MobilityWeight = 1;
+    private double PieceWeight = 1;
+    private double PositionWeight = 1;
+    private double MobilityWeight = 1;
 
     private HashMap<Move, Double> moveValues;
     private Game game;
@@ -30,7 +32,10 @@ public class HeuristicAi {
         this.gameService = new GameService();
     }
 
-    public Move getMove() {
+    public Move getMove(double pieceWeight, double positionWeight, double mobilityWeight) {
+        this.PieceWeight = pieceWeight;
+        this.PositionWeight = positionWeight;
+        this.MobilityWeight = mobilityWeight;
         if (initialPossibleMoves.getAllMoves().size() == 0) {
             System.out.println("No possible moves");
             return null;
@@ -44,8 +49,20 @@ public class HeuristicAi {
             double value = evaluateMove(move);
             moveValues.put(move, value);
         }
-        Move bestMove = moveValues.entrySet().stream().max(Map.Entry.comparingByValue()).map(Map.Entry::getKey)
-                .orElse(null);
+        List<Move> result = new ArrayList<>();
+        double max = Double.NEGATIVE_INFINITY;
+
+        for (Map.Entry<Move, Double> entry : moveValues.entrySet()) {
+            double value = entry.getValue();
+            if (value > max) {
+                max = value;
+                result.clear();
+                result.add(entry.getKey());
+            } else if (value == max) {
+                result.add(entry.getKey());
+            }
+        }
+        Move bestMove = result.get((int) (Math.random() * result.size()));
         if (false) {
             game.getBoard().printBoard();
             for (Move move : moveValues.keySet()) {

@@ -15,15 +15,16 @@ import com.example.service.GameService;
 
 public class MCTSRave {
 
-    private static final double CVALUE = 0.7;
-    private static final double RAVE_BIAS = 10;
+    private static final double CVALUE = 0.3;
+    private double RAVE_BIAS = 15;
 
-    public Move raveUctSearch(Game game, boolean useTimeInsteadOfIterations) {
+    public Move raveUctSearch(Game game, boolean useTimeInsteadOfIterations, double raveBias) {
         Node rootNode = new Node(new MctsState(game), null, null);
+        this.RAVE_BIAS = raveBias;
 
         int iterations = 0;
         long startTime = System.currentTimeMillis();
-        long timeLimit = 3000;
+        long timeLimit = 2000;
 
         while (useTimeInsteadOfIterations ? System.currentTimeMillis() < startTime + timeLimit
                 : iterations < 1000) {
@@ -34,24 +35,30 @@ public class MCTSRave {
         }
 
         Player currentPlayer = game.getCurrentPlayer();
-        if (true) {
+        if (false) {
             System.out.println("Iterations: " + iterations);
             game.getBoard().printBoard();
+            System.out.println(RAVE_BIAS);
             for (Node child : rootNode.getChildren()) {
                 System.out.println("Move: " + child.getIncomingMove().getPiece().getName() + " "
                         + child.getIncomingMove().getMovement().getX(currentPlayer.getColor()) + " "
                         + child.getIncomingMove().getMovement().getY(currentPlayer.getColor()) + "\t Reward: "
                         + child.getValue()
-                        + "\t Visits: " + child.getVisits() + "\t Winrate: "
+                        + "\t Visits: " + child.getVisits() + "\t Rave Visits: " + child.getAvgRaveVisits()
+                        + "\t Winrate: "
                         + (child.getValue() / child.getVisits()));
             }
         }
 
         Move bestMove = bestChild(rootNode, 0).getIncomingMove();
-        System.out.println("Best move: " + bestMove.getPiece().getName() + " "
-                + bestMove.getMovement().getX(currentPlayer.getColor()) + " "
-                + bestMove.getMovement().getY(currentPlayer.getColor()));
-        return bestChild(rootNode, 0).incomingMove;
+
+        if (false) {
+            System.out.println("Best move: " + bestMove.getPiece().getName() + " "
+                    + bestMove.getMovement().getX(currentPlayer.getColor()) + " "
+                    + bestMove.getMovement().getY(currentPlayer.getColor()));
+        }
+
+        return bestMove;
     }
 
     public Node treePolicy(Node node) {
@@ -108,14 +115,15 @@ public class MCTSRave {
         boolean flip = false;
         while (currentNode != null) {
             currentNode.visits++;
-            currentNode.value += !flip ? 1 - reward : reward;
+            currentNode.value += (!flip ? 1 - reward : reward);
             for (Node child : currentNode.getChildren()) {
                 for (Move move : playedMoves) {
                     if (child.getIncomingMove().equals(move)) {
-                        child.updateAMAF(move, reward);
+                        child.updateAMAF(move, flip ? 1 - reward : reward);
                     }
                 }
             }
+            playedMoves.add(currentNode.getIncomingMove());
             currentNode = currentNode.getParent();
             flip = !flip;
         }
@@ -168,6 +176,10 @@ public class MCTSRave {
 
         public int getRaveVisits(Move move) {
             return raveVisits.getOrDefault(move, 0);
+        }
+
+        public double getAvgRaveVisits() {
+            return raveVisits.values().stream().mapToInt(Integer::intValue).average().orElse(0);
         }
 
         public MctsState getState() {
