@@ -158,17 +158,17 @@ public class GameService {
     public void dayTest() {
         this.aiTypeRed = AiType.MCTS;
         this.aiTypeBlue = AiType.RAVE_TEST;
-        this.biasA = 20;
-        this.biasB = 20;
-        runGames(45 * 60 * 1000);
+        this.biasA = 0.7;
+        this.biasB = 0.7;
+        runGames(45 * 60 * 1000, false);
         System.out.println("new test");
         this.biasA = 40;
         this.biasB = 40;
-        runGames(45 * 60 * 1000);
+        runGames(45 * 60 * 1000, false);
         System.out.println("new test");
         this.biasA = 60;
         this.biasB = 60;
-        runGames(45 * 60 * 1000);
+        runGames(45 * 60 * 1000, false);
     }
 
     public void runCustomTestsWithAbortLimit() {
@@ -247,7 +247,7 @@ public class GameService {
         System.out.println("Red wins: " + redwins + ", Blue wins: " + bluewins);
     }
 
-    public void runGames(long duration) {
+    public void runGames(long duration, boolean useAbort) {
         double gameDurations = 0;
         double winnerPieces = 0;
         double loserPieces = 0;
@@ -264,13 +264,66 @@ public class GameService {
             writer.write("Starting with agents: " + aiTypeRed + " and " + aiTypeBlue + ", Bias A: " + biasA
                     + ", Bias B: " + biasB + "C-Value A: " + cValueA + ", C-Value B: " + cValueB);
             writer.newLine();
-            while (System.currentTimeMillis() - startTime < duration) {
-                ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
-                Future<GameStats> future = executorService.submit(() -> aiVsAi(aiTypeRed, aiTypeBlue));
+            if (useAbort) {
+                while (System.currentTimeMillis() - startTime < duration) {
+                    ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+                    Future<GameStats> future = executorService.submit(() -> aiVsAi(aiTypeRed, aiTypeBlue));
 
-                try {
-                    // Wait for the AI vs AI match to complete, with a timeout of 10 minutes
-                    GameStats stats = future.get(10, TimeUnit.MINUTES);
+                    try {
+                        // Wait for the AI vs AI match to complete, with a timeout of 10 minutes
+                        GameStats stats = future.get(10, TimeUnit.MINUTES);
+                        double gameDuration = Math.floor(stats.getDuration() / 1000);
+                        gameDurations += gameDuration;
+                        winnerPieces += stats.getPieceCountWinner();
+                        loserPieces += stats.getPieceCountLoser();
+                        if (stats.getStartingColor() == stats.getWinner().getColor()) {
+                            winnerIsStartingPlayer++;
+                        }
+                        if (stats.isWinThroughTemple()) {
+                            templeWins++;
+                        }
+
+                        String result = "Game duration: " + gameDuration + "s" + "(" + gameDuration / 60
+                                + "min), Winner pieces: " + stats.getPieceCountWinner() + ", Loser pieces: "
+                                + stats.getPieceCountLoser() + ", Temple win: " + stats.isWinThroughTemple()
+                                + ", Starting color: " + stats.getStartingColor();
+
+                        writer.write(result);
+                        writer.newLine();
+
+                        if (stats.getWinner().getColor() == PlayerColor.RED) {
+                            redwins++;
+                        } else {
+                            bluewins++;
+                        }
+                        overallMatches++;
+
+                        String summary = "Red wins: " + redwins + ", Blue wins: " + bluewins + ", Avg Duration: "
+                                + gameDurations / overallMatches + ", Avg. Winner Pieces: "
+                                + winnerPieces / overallMatches + ", Avg. Loser Pieces: " + loserPieces / overallMatches
+                                + ", Avg. Temple Wins: " + templeWins / overallMatches
+                                + ", Avg. Winner is Starting Player: "
+                                + winnerIsStartingPlayer / overallMatches + ", Aborted Matches: " + abortedMatches;
+
+                        writer.write(summary);
+                        writer.newLine();
+                        writer.newLine();
+                    } catch (TimeoutException e) {
+                        // Match took too long, so we cancel the task and move to the next one
+                        future.cancel(true);
+                        abortedMatches++;
+                        overallMatches++;
+                        writer.write("A match took too long and was aborted.");
+                        writer.newLine();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    } finally {
+                        executorService.shutdown();
+                    }
+                }
+            } else {
+                while (System.currentTimeMillis() - startTime < duration) {
+                    GameStats stats = aiVsAi(aiTypeRed, aiTypeBlue);
                     double gameDuration = Math.floor(stats.getDuration() / 1000);
                     gameDurations += gameDuration;
                     winnerPieces += stats.getPieceCountWinner();
@@ -307,19 +360,9 @@ public class GameService {
                     writer.write(summary);
                     writer.newLine();
                     writer.newLine();
-                } catch (TimeoutException e) {
-                    // Match took too long, so we cancel the task and move to the next one
-                    future.cancel(true);
-                    abortedMatches++;
-                    overallMatches++;
-                    writer.write("A match took too long and was aborted.");
-                    writer.newLine();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally {
-                    executorService.shutdown();
                 }
             }
+
             writer.write("Red wins: " + redwins + ", Blue wins: " + bluewins);
             writer.newLine();
             writer.write(

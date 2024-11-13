@@ -17,6 +17,9 @@ public class MCTSRaveTest {
 
     private static final double CVALUE = 0.3;
     private double RAVE_BIAS = 15;
+    private Player currentPlayer;
+    private double bias;
+    private double biasCOunter;
 
     public Move raveUctSearch(Game game, boolean useTimeInsteadOfIterations, double raveBias) {
         Node rootNode = new Node(new MctsState(game), null, null);
@@ -34,21 +37,13 @@ public class MCTSRaveTest {
             iterations++;
         }
 
-        Player currentPlayer = game.getCurrentPlayer();
+        currentPlayer = game.getCurrentPlayer();
         if (false) {
             System.out.println("Iterations: " + iterations);
             System.out.println(rootNode.getVisits());
             game.getBoard().printBoard();
             System.out.println(RAVE_BIAS);
-            for (Node child : rootNode.getChildren()) {
-                System.out.println("Move: " + child.getIncomingMove().getPiece().getName() + " "
-                        + child.getIncomingMove().getMovement().getX(currentPlayer.getColor()) + " "
-                        + child.getIncomingMove().getMovement().getY(currentPlayer.getColor()) + "\t Reward: "
-                        + child.getValue()
-                        + "\t Visits: " + child.getVisits() + "\t Rave Visits: " + child.getRaveVisits()
-                        + "\t Rave reward: " + child.getRaveReward() + "\t Winrate: "
-                        + (child.getRaveWinRate()));
-            }
+
         }
 
         Move bestMove = bestChild(rootNode, 0).getIncomingMove();
@@ -83,26 +78,54 @@ public class MCTSRaveTest {
     public Node bestChild(Node node, double cValue) {
         Node bestChild = null;
         double bestValue = Double.NEGATIVE_INFINITY;
+        double bestUTC = Double.NEGATIVE_INFINITY;
+        double bestRave = Double.NEGATIVE_INFINITY;
+        boolean log = false;
+        if (cValue == 0.0) {
+            log = false;
+            // System.out.println("Bias: " + bias / biasCOunter);
+        }
 
         for (Node child : node.getChildren()) {
             double uctValue = (child.getValue() / child.getVisits())
                     + cValue * Math.sqrt(2 * Math.log(node.getVisits()) / child.getVisits());
+            if (uctValue > bestUTC) {
+                bestUTC = uctValue;
+            }
 
-            Move incomingMove = child.getIncomingMove();
-            double raveWinRate = child.getRaveWinRate(incomingMove);
-            int raveVisits = child.getRaveVisits(incomingMove);
+            if (false) {
+                double raveBias = ((RAVE_BIAS - node.getVisits()) / RAVE_BIAS) > 0
+                        ? ((RAVE_BIAS - node.getVisits()) / RAVE_BIAS)
+                        : 0;
+                bias += raveBias;
+                biasCOunter++;
+            }
 
-            double raveBias = ((RAVE_BIAS - node.getVisits()) / RAVE_BIAS) > 0
-                    ? ((RAVE_BIAS - node.getVisits()) / RAVE_BIAS)
-                    : 0;
+            if (child.getRaveWinRate() > bestRave) {
+                bestRave = child.getRaveWinRate();
+            }
 
-            double raveValue = raveVisits == 0 ? uctValue
-                    : raveBias * child.getRaveWinRate() + (1 - raveBias) * uctValue;
+            double raveValue = child.getRaveVisits() == 0 ? uctValue
+                    : RAVE_BIAS * child.getRaveWinRate() + (1 - RAVE_BIAS) * uctValue;
+            if (log) {
+                ;
+                System.out.println("Move: " + child.getIncomingMove().getPiece().getName() + " "
+                        + child.getIncomingMove().getMovement().getX(currentPlayer.getColor()) + " "
+                        + child.getIncomingMove().getMovement().getY(currentPlayer.getColor()) + "\t Reward: "
+                        + child.getValue()
+                        + "\t Visits: " + child.getVisits() + "\t Rave Visits: " + child.getRaveVisits()
+                        + "\t Rave reward: " + child.getRaveReward() + "\t Winrate: "
+                        + (child.getRaveWinRate()) + "\t Rave Value: " + raveValue
+                        + "\t UCT: " + uctValue);
+            }
 
             if (raveValue > bestValue) {
                 bestValue = raveValue;
                 bestChild = child;
             }
+        }
+        if (log) {
+            System.out.println("Beste Value: " + bestValue + "\t Best UTC: " + bestUTC + "\t Best Rave: " + bestRave);
         }
 
         return bestChild;
