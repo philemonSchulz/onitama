@@ -13,7 +13,7 @@ import com.example.model.Player.PlayerColor;
 import com.example.service.GameService;
 
 public class MCTSHeuristic {
-    public static final double PieceWeight = 3;
+    public static final double PieceWeight = 1;
     public static final double PositionWeight = 1;
     public static final double MobilityWeight = 1;
 

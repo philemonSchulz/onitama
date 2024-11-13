@@ -18,6 +18,7 @@ import com.example.aimodels.HeuristicAi;
 import com.example.aimodels.MCTSHeuristic;
 import com.example.aimodels.MCTS;
 import com.example.aimodels.MCTSRave;
+import com.example.aimodels.MCTSRaveTest;
 import com.example.aimodels.RandomAi;
 import com.example.controller.MoveController;
 import com.example.helperObjects.SimulationResult;
@@ -34,10 +35,12 @@ import com.example.model.Player.PlayerColor;
 import com.example.model.Tile;
 
 public class GameService {
-    private double cValueA = 0.7;
-    private double cValueB = 1;
-    private double biasA = 100;
+    private double cValueA = 0.3;
+    private double cValueB = 0.3;
+    private double biasA = 300;
     private double biasB = 300;
+    private AiType aiTypeRed = AiType.RAVE_MCTS;
+    private AiType aiTypeBlue = AiType.RAVE_MCTS;
 
     public boolean playerVsAi(AiType aiType) {
         Game game = new Game(UUID.randomUUID().toString());
@@ -153,16 +156,19 @@ public class GameService {
     }
 
     public void dayTest() {
-        runGames(360 * 60 * 1000);
-        this.biasA = 300;
-        this.biasB = 500;
-        runGames(360 * 60 * 1000);
-        this.biasA = 200;
-        this.biasB = 300;
-        runGames(360 * 60 * 1000);
-        this.biasA = 300;
-        this.biasB = 400;
-        runGames(360 * 60 * 1000);
+        this.aiTypeRed = AiType.MCTS;
+        this.aiTypeBlue = AiType.RAVE_TEST;
+        this.biasA = 20;
+        this.biasB = 20;
+        runGames(90 * 60 * 1000);
+        System.out.println("new test");
+        this.biasA = 20;
+        this.biasB = 20;
+        runGames(90 * 60 * 1000);
+        System.out.println("new test");
+        this.biasA = 30;
+        this.biasB = 30;
+        runGames(90 * 60 * 1000);
     }
 
     public void runCustomTestsWithAbortLimit() {
@@ -254,10 +260,13 @@ public class GameService {
 
         long startTime = System.currentTimeMillis();
 
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter("rave_stats.txt", true))) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("playouts.txt", true))) {
+            writer.write("Starting with agents: " + aiTypeRed + " and " + aiTypeBlue + ", Bias A: " + biasA
+                    + ", Bias B: " + biasB + "C-Value A: " + cValueA + ", C-Value B: " + cValueB);
+            writer.newLine();
             while (System.currentTimeMillis() - startTime < duration) {
                 ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
-                Future<GameStats> future = executorService.submit(() -> aiVsAi(AiType.RAVE_MCTS, AiType.RAVE_MCTS));
+                Future<GameStats> future = executorService.submit(() -> aiVsAi(aiTypeRed, aiTypeBlue));
 
                 try {
                     // Wait for the AI vs AI match to complete, with a timeout of 10 minutes
@@ -488,9 +497,14 @@ public class GameService {
                 move = raveMcts.raveUctSearch(game, true,
                         game.getCurrentPlayer().getColor() == PlayerColor.RED ? biasA : biasB);
             }
+            case RAVE_TEST -> {
+                MCTSRaveTest raveMcts = new MCTSRaveTest();
+                move = raveMcts.raveUctSearch(game, true,
+                        game.getCurrentPlayer().getColor() == PlayerColor.RED ? biasA : biasB);
+            }
             case HEURISTIC_MCTS -> {
                 MCTSHeuristic heuristicMcts = new MCTSHeuristic();
-                move = heuristicMcts.uctSearchWithHeurisitc(game, true, 1);
+                move = heuristicMcts.uctSearchWithHeurisitc(game, true, 0.3);
             }
             default -> move = RandomAi.getMove(game, false);
         }
