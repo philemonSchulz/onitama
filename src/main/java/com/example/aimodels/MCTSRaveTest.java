@@ -35,7 +35,7 @@ public class MCTSRaveTest {
         }
 
         Player currentPlayer = game.getCurrentPlayer();
-        if (true) {
+        if (false) {
             System.out.println("Iterations: " + iterations);
             System.out.println(rootNode.getVisits());
             game.getBoard().printBoard();
@@ -53,7 +53,7 @@ public class MCTSRaveTest {
 
         Move bestMove = bestChild(rootNode, 0).getIncomingMove();
 
-        if (true) {
+        if (false) {
             System.out.println("Best move: " + bestMove.getPiece().getName() + " "
                     + bestMove.getMovement().getX(currentPlayer.getColor()) + " "
                     + bestMove.getMovement().getY(currentPlayer.getColor()));

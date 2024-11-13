@@ -160,15 +160,15 @@ public class GameService {
         this.aiTypeBlue = AiType.RAVE_TEST;
         this.biasA = 20;
         this.biasB = 20;
-        runGames(90 * 60 * 1000);
+        runGames(45 * 60 * 1000);
         System.out.println("new test");
-        this.biasA = 20;
-        this.biasB = 20;
-        runGames(90 * 60 * 1000);
+        this.biasA = 40;
+        this.biasB = 40;
+        runGames(45 * 60 * 1000);
         System.out.println("new test");
-        this.biasA = 30;
-        this.biasB = 30;
-        runGames(90 * 60 * 1000);
+        this.biasA = 60;
+        this.biasB = 60;
+        runGames(45 * 60 * 1000);
     }
 
     public void runCustomTestsWithAbortLimit() {
