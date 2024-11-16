@@ -389,12 +389,14 @@ public class GameService {
      * Methods for Game Logic from here:
      */
 
-    public void playAiMove(Game game) {
+    public Move playAiMove(Game game) {
+        Move move = null;
         if (game.getGameState() == GameState.IN_PROGRESS && game.getCurrentPlayer().isAi()) {
-            Move move = generateAiMove(game);
+            move = generateAiMove(game);
             processMove(game, move);
             switchTurn(game);
         }
+        return move;
     }
 
     public void playOwnMove(Game game) {

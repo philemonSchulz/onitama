@@ -19,6 +19,10 @@ public class Player {
         // Default constructor for deserialization
     }
 
+    public Player(@JsonProperty("color") PlayerColor color) {
+        this.color = color;
+    }
+
     @JsonCreator
     public Player(@JsonProperty("color") PlayerColor color, @JsonProperty("aiType") AiType aiType) {
         this.color = color;

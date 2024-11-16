@@ -28,29 +28,43 @@ public class CardCreator {
         return randomCards;
     }
 
+    public static Card[] createCardsBasedOnNames(String[] cardNames) {
+        Card[] cards = createCards();
+        Card[] selectedCards = new Card[5];
+        for (int i = 0; i < 5; i++) {
+            for (Card card : cards) {
+                if (card.getName().equals(cardNames[i])) {
+                    selectedCards[i] = card;
+                    break;
+                }
+            }
+        }
+        return selectedCards;
+    }
+
     public static Card[] createCards() {
         Card[] cards = new Card[16];
-        Card card = new Card("Hahn", PlayerColor.RED);
+        Card card = new Card("Rooster", PlayerColor.RED);
         card.addMove(-1, 0);
         card.addMove(-1, -1);
         card.addMove(1, 0);
         card.addMove(1, 1);
         cards[0] = card;
 
-        card = new Card("Krabbe", PlayerColor.BLUE);
+        card = new Card("Crab", PlayerColor.BLUE);
         card.addMove(-2, 0);
         card.addMove(0, 1);
         card.addMove(2, 0);
         cards[1] = card;
 
-        card = new Card("Affe", PlayerColor.BLUE);
+        card = new Card("Monkey", PlayerColor.BLUE);
         card.addMove(-1, -1);
         card.addMove(-1, 1);
         card.addMove(1, -1);
         card.addMove(1, 1);
         cards[2] = card;
 
-        card = new Card("Gottesanbeterin", PlayerColor.RED);
+        card = new Card("Mantis", PlayerColor.RED);
         card.addMove(-1, 1);
         card.addMove(1, 1);
         card.addMove(0, -1);
@@ -61,70 +75,70 @@ public class CardCreator {
         card.addMove(0, 2);
         cards[4] = card;
 
-        card = new Card("Frosch", PlayerColor.RED);
+        card = new Card("Frog", PlayerColor.RED);
         card.addMove(-2, 0);
         card.addMove(-1, 1);
         card.addMove(1, -1);
         cards[5] = card;
 
-        card = new Card("Wildschwein", PlayerColor.RED);
+        card = new Card("Boar", PlayerColor.RED);
         card.addMove(1, 0);
         card.addMove(-1, 0);
         card.addMove(0, 1);
         cards[6] = card;
 
-        card = new Card("Elefant", PlayerColor.RED);
+        card = new Card("Elephant", PlayerColor.RED);
         card.addMove(-1, 0);
         card.addMove(-1, 1);
         card.addMove(1, 0);
         card.addMove(1, 1);
         cards[7] = card;
 
-        card = new Card("Pferd", PlayerColor.RED);
+        card = new Card("Horse", PlayerColor.RED);
         card.addMove(-1, 0);
         card.addMove(0, -1);
         card.addMove(0, 1);
         cards[8] = card;
 
-        card = new Card("Gans", PlayerColor.BLUE);
+        card = new Card("Goose", PlayerColor.BLUE);
         card.addMove(-1, 0);
         card.addMove(-1, 1);
         card.addMove(1, 0);
         card.addMove(1, -1);
         cards[9] = card;
 
-        card = new Card("Kranich", PlayerColor.BLUE);
+        card = new Card("Crane", PlayerColor.BLUE);
         card.addMove(0, 1);
         card.addMove(-1, -1);
         card.addMove(1, -1);
         cards[10] = card;
 
-        card = new Card("Drache", PlayerColor.RED);
+        card = new Card("Dragon", PlayerColor.RED);
         card.addMove(-2, 1);
         card.addMove(2, 1);
         card.addMove(-1, -1);
         card.addMove(1, -1);
         cards[11] = card;
 
-        card = new Card("Hase", PlayerColor.BLUE);
+        card = new Card("Rabbit", PlayerColor.BLUE);
         card.addMove(-1, -1);
         card.addMove(1, 1);
         card.addMove(2, 0);
         cards[12] = card;
 
-        card = new Card("Aal", PlayerColor.BLUE);
+        card = new Card("Eel", PlayerColor.BLUE);
         card.addMove(-1, 1);
         card.addMove(-1, -1);
         card.addMove(1, 0);
         cards[13] = card;
 
-        card = new Card("Kobra", PlayerColor.RED);
+        card = new Card("Cobra", PlayerColor.RED);
         card.addMove(-1, 0);
         card.addMove(1, 1);
         card.addMove(1, -1);
         cards[14] = card;
 
-        card = new Card("Ochse", PlayerColor.BLUE);
+        card = new Card("Ox", PlayerColor.BLUE);
         card.addMove(0, 1);
         card.addMove(0, -1);
         card.addMove(1, 0);

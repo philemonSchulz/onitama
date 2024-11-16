@@ -7,9 +7,11 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import com.example.model.Game;
@@ -42,7 +44,8 @@ public class GameClient {
             System.out.println("1. List open games");
             System.out.println("2. Create game");
             System.out.println("3. Join game");
-            System.out.println("4. Back to main menu");
+            System.out.println("4. Tests");
+            System.out.println("5. Back to main menu");
             int choice = scanner.nextInt();
 
             switch (choice) {
@@ -58,6 +61,9 @@ public class GameClient {
                     joinGame(gameId); // Join an existing game
                     break;
                 case 4:
+                    test(); // Run tests
+                    break;
+                case 5:
                     continueInServerMenu = false; // Return to the main menu
                     break;
                 default:
@@ -123,9 +129,10 @@ public class GameClient {
             System.out.println("2. Random Ai with priority to capturing moves");
             System.out.println("3. MCTS");
             System.out.println("4. RAVE MCTS");
+            System.out.println("5. Heuristic MCTS");
             choice = scanner.nextInt();
 
-            while (choice < 1 || choice > 3) {
+            while (choice < 1 || choice > 5) {
                 System.out.println("Invalid choice. Please try again.");
                 choice = scanner.nextInt();
             }
@@ -143,6 +150,9 @@ public class GameClient {
                     break;
                 case 4:
                     aiType = AiType.RAVE_MCTS;
+                    break;
+                case 5:
+                    aiType = AiType.HEURISTIC_MCTS;
                     break;
             }
 
@@ -169,6 +179,10 @@ public class GameClient {
         }
     }
 
+    public void test() {
+
+    }
+
     public void joinGame(String gameId) {
         String url = baseUrl + "/join?gameId=" + gameId;
 
@@ -192,30 +206,26 @@ public class GameClient {
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         HttpEntity<Move> request = new HttpEntity<>(move, headers);
-        ResponseEntity<String> response = restTemplate.exchange(
-                url,
-                HttpMethod.POST,
-                request,
-                String.class);
 
-        if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.POST,
+                    request,
+                    String.class);
+
+            HttpStatusCode statusCode = response.getStatusCode();
             String responseBody = response.getBody();
-            if ("Move accepted.".equals(responseBody)) {
-                System.out.println("Move submitted.");
+
+            if (statusCode.is2xxSuccessful()) {
+                System.out.println(responseBody);
                 return true;
             } else {
-                System.out.println("Failed to submit move: " + responseBody);
+                System.out.println("Error (" + statusCode + "): " + responseBody);
                 return false;
             }
-        } else {
-            String responseBody = response.getBody();
-            if (response.getStatusCode().is4xxClientError()) {
-                System.out.println("Client error: " + responseBody);
-            } else if (response.getStatusCode().is5xxServerError()) {
-                System.out.println("Server error: " + responseBody);
-            } else {
-                System.out.println("Failed to submit move: " + responseBody);
-            }
+        } catch (HttpClientErrorException e) {
+            System.out.println("Request failed: " + e.getStatusCode() + " - " + e.getResponseBodyAsString());
             return false;
         }
     }
@@ -243,7 +253,6 @@ public class GameClient {
     }
 
     public boolean checkIfMyTurn() {
-        System.out.println(gameId);
         String url = baseUrl + "/" + gameId + "/isMyTurn/" + playerColor;
 
         ResponseEntity<Boolean> response = restTemplate.exchange(

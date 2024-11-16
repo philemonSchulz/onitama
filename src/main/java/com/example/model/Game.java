@@ -146,6 +146,15 @@ public class Game {
         }
     }
 
+    public Card getBlueCardByName(String cardName) {
+        for (Card card : playerBlueCards) {
+            if (card.getName().equals(cardName)) {
+                return card;
+            }
+        }
+        return null;
+    }
+
     public boolean isGameWon() {
         return gameState == GameState.FINISHED;
     }
