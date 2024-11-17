@@ -18,7 +18,7 @@ import com.example.aimodels.HeuristicAi;
 import com.example.aimodels.MCTSHeuristic;
 import com.example.aimodels.MCTS;
 import com.example.aimodels.MCTSRave;
-import com.example.aimodels.MCTSRaveTest;
+import com.example.aimodels.MCTSRave;
 import com.example.aimodels.RandomAi;
 import com.example.controller.MoveController;
 import com.example.helperObjects.SimulationResult;
@@ -157,7 +157,7 @@ public class GameService {
 
     public void dayTest() {
         this.aiTypeRed = AiType.MCTS;
-        this.aiTypeBlue = AiType.RAVE_TEST;
+        this.aiTypeBlue = AiType.RAVE_MCTS;
         this.biasA = 1700;
         this.biasB = 1700;
         runGames(240 * 60 * 1000, true);
@@ -533,11 +533,6 @@ public class GameService {
             }
             case RAVE_MCTS -> {
                 MCTSRave raveMcts = new MCTSRave();
-                move = raveMcts.raveUctSearch(game, true,
-                        game.getCurrentPlayer().getColor() == PlayerColor.RED ? biasA : biasB);
-            }
-            case RAVE_TEST -> {
-                MCTSRaveTest raveMcts = new MCTSRaveTest();
                 move = raveMcts.raveUctSearch(game, true,
                         game.getCurrentPlayer().getColor() == PlayerColor.RED ? biasA : biasB);
             }
