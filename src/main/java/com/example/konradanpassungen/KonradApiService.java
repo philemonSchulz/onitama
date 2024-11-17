@@ -37,7 +37,7 @@ public class KonradApiService {
         String gameId = "Game" + gameIndex++;
         Game game = new Game(gameId);
 
-        game.setPlayerRed(new Player(Player.PlayerColor.RED, AiType.MCTS));
+        game.setPlayerRed(new Player(Player.PlayerColor.RED, AiType.RANDOM_PRIOTIZING));
         game.setPlayerBlue(new Player(Player.PlayerColor.BLUE));
 
         Card[] selectedCards = CardCreator.createCardsBasedOnNames(cards);
@@ -64,6 +64,8 @@ public class KonradApiService {
         if (game.getCurrentPlayer().getColor() == Player.PlayerColor.RED) {
             Move move = gameService.playAiMove(game);
             this.latestMoves.put(gameId, move);
+            System.out.println(move.getPiece().getX() + ", " + move.getPiece().getY() + ", " + move.getMovement().getX()
+                    + ", " + move.getMovement().getY());
         }
 
         return gameId;
@@ -98,12 +100,17 @@ public class KonradApiService {
             return ResponseEntity.status(400).body("Not your turn");
         }
 
+        System.out.println("Move: " + move.getX() + ", " + move.getY() + ", " + move.getMovementX() + ", "
+                + move.getMovementY() + ", " + move.getCardName());
+        System.out.println(
+                "Move: " + (6 - move.getY()) + ", " + (6 - move.getX()) + ", " + (-1 * move.getMovementY()) + ", "
+                        + (-1 * move.getMovementX()) + ", " + move.getCardName());
         Piece piece = game.getBoard().getTile(6 - move.getY(), 6 - move.getX()).getPiece();
         if (piece == null || piece.getColor() != playerColor) {
             return ResponseEntity.status(400).body("Invalid move");
         }
 
-        Movement movement = new Movement(-1 * move.getMovementY(), -1 * move.getMovementX());
+        Movement movement = new Movement(1 * move.getMovementY(), 1 * move.getMovementX());
 
         Card card = game.getBlueCardByName(move.getCardName());
         if (card == null) {
