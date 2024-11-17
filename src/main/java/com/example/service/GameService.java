@@ -158,8 +158,8 @@ public class GameService {
     public void dayTest() {
         this.aiTypeRed = AiType.MCTS;
         this.aiTypeBlue = AiType.RAVE_TEST;
-        this.biasA = 0.45;
-        this.biasB = 0.45;
+        this.biasA = 1700;
+        this.biasB = 1700;
         runGames(240 * 60 * 1000, true);
     }
 
@@ -254,7 +254,8 @@ public class GameService {
 
         try (BufferedWriter writer = new BufferedWriter(new FileWriter("playoutsRave3.txt", true))) {
             writer.write("Starting with agents: " + aiTypeRed + " and " + aiTypeBlue + ", Bias A: " + biasA
-                    + ", Bias B: " + biasB + "C-Value A: " + cValueA + ", C-Value B: " + cValueB);
+                    + ", Bias B: " + biasB + "C-Value A: " + cValueA + ", C-Value B: " + cValueB + ", Duration: "
+                    + duration / 1000 / 60 + "min");
             writer.newLine();
             if (useAbort) {
                 while (System.currentTimeMillis() - startTime < duration) {

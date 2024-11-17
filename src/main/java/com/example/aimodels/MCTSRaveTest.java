@@ -93,20 +93,18 @@ public class MCTSRaveTest {
                 bestUTC = uctValue;
             }
 
-            if (false) {
-                double raveBias = ((RAVE_BIAS - node.getVisits()) / RAVE_BIAS) > 0
-                        ? ((RAVE_BIAS - node.getVisits()) / RAVE_BIAS)
-                        : 0;
-                bias += raveBias;
-                biasCOunter++;
-            }
+            double raveBias = ((RAVE_BIAS - node.getVisits()) / RAVE_BIAS) > 0
+                    ? ((RAVE_BIAS - node.getVisits()) / RAVE_BIAS)
+                    : 0;
+            bias += raveBias;
+            biasCOunter++;
 
             if (child.getRaveWinRate() > bestRave) {
                 bestRave = child.getRaveWinRate();
             }
 
             double raveValue = child.getRaveVisits() == 0 ? uctValue
-                    : RAVE_BIAS * child.getRaveWinRate() + (1 - RAVE_BIAS) * uctValue;
+                    : raveBias * child.getRaveWinRate() + (1 - raveBias) * uctValue;
             if (log) {
                 ;
                 System.out.println("Move: " + child.getIncomingMove().getPiece().getName() + " "
@@ -125,7 +123,8 @@ public class MCTSRaveTest {
             }
         }
         if (log) {
-            System.out.println("Beste Value: " + bestValue + "\t Best UTC: " + bestUTC + "\t Best Rave: " + bestRave);
+            System.out.println("Beste Value: " + bestValue + "\t Best UTC: " + bestUTC + "\t Best Rave: " + bestRave
+                    + "\t Bias: " + bias / biasCOunter);
         }
 
         return bestChild;
@@ -144,7 +143,6 @@ public class MCTSRaveTest {
             for (Node child : currentNode.getChildren()) {
                 for (Move move : playedMoves) {
                     if (child.getIncomingMove().equals(move)) {
-                        // child.updateAMAF(move, flip ? 1 - reward : reward);
                         child.updateRave(flip ? 1 - reward : reward);
                     }
                 }
@@ -170,8 +168,6 @@ public class MCTSRaveTest {
         List<Node> children;
         int visits;
         double value;
-        Map<Move, Integer> raveVisits;
-        Map<Move, Double> raveValue;
         double raveVist;
         double raveReward;
 
@@ -182,19 +178,12 @@ public class MCTSRaveTest {
             this.children = new ArrayList<>();
             this.visits = 0;
             this.value = 0;
-            this.raveVisits = new HashMap<>();
-            this.raveValue = new HashMap<>();
             this.raveVist = 0;
             this.raveReward = 0;
         }
 
         public void addChild(Node child) {
             children.add(child);
-        }
-
-        public void updateAMAF(Move move, int reward) {
-            raveVisits.put(move, raveVisits.getOrDefault(move, 0) + 1);
-            raveValue.put(move, raveValue.getOrDefault(move, 0.0) + reward);
         }
 
         public void updateRave(int reward) {
@@ -216,21 +205,6 @@ public class MCTSRaveTest {
 
         public double getRaveReward() {
             return raveReward;
-        }
-
-        public double getRaveWinRate(Move move) {
-            if (!raveVisits.containsKey(move)) {
-                return 0;
-            }
-            return raveValue.get(move) / raveVisits.get(move);
-        }
-
-        public int getRaveVisits(Move move) {
-            return raveVisits.getOrDefault(move, 0);
-        }
-
-        public double getAvgRaveVisits() {
-            return raveVisits.values().stream().mapToInt(Integer::intValue).average().orElse(0);
         }
 
         public MctsState getState() {

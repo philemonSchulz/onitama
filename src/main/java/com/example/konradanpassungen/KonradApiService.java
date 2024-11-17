@@ -37,7 +37,7 @@ public class KonradApiService {
         String gameId = "Game" + gameIndex++;
         Game game = new Game(gameId);
 
-        game.setPlayerRed(new Player(Player.PlayerColor.RED, AiType.RANDOM_PRIOTIZING));
+        game.setPlayerRed(new Player(Player.PlayerColor.RED, AiType.MCTS));
         game.setPlayerBlue(new Player(Player.PlayerColor.BLUE));
 
         Card[] selectedCards = CardCreator.createCardsBasedOnNames(cards);
@@ -63,9 +63,9 @@ public class KonradApiService {
         System.out.println("current player: " + game.getCurrentPlayer().getColor());
         if (game.getCurrentPlayer().getColor() == Player.PlayerColor.RED) {
             Move move = gameService.playAiMove(game);
-            this.latestMoves.put(gameId, move);
-            System.out.println(move.getPiece().getX() + ", " + move.getPiece().getY() + ", " + move.getMovement().getX()
-                    + ", " + move.getMovement().getY() + ", " + move.getCard().getName());
+            System.out.println("Red played: " + move.getPiece().getX() + ", " + move.getPiece().getY() + ", "
+                    + move.getMovement().getX() + ", " + move.getMovement().getY() + ", " + move.getCard().getName());
+            game.getBoard().printBoard();
         }
 
         return gameId;
@@ -101,11 +101,6 @@ public class KonradApiService {
             return ResponseEntity.status(400).body("Not your turn");
         }
 
-        System.out.println("Move: " + move.getX() + ", " + move.getY() + ", " + move.getMovementX() + ", "
-                + move.getMovementY() + ", " + move.getCardName());
-        System.out.println(
-                "Move: " + (6 - move.getY()) + ", " + (6 - move.getX()) + ", " + (-1 * move.getMovementY()) + ", "
-                        + (-1 * move.getMovementX()) + ", " + move.getCardName());
         Piece piece = game.getBoard().getTile(6 - move.getY(), 6 - move.getX()).getPiece();
         if (piece == null || piece.getColor() != playerColor) {
             return ResponseEntity.status(400).body("Invalid move");
@@ -126,15 +121,23 @@ public class KonradApiService {
         }
 
         gameService.switchTurn(game);
+        System.out.println("Blue played: " + newMove.getPiece().getX() + ", " + newMove.getPiece().getY() + ", "
+                + newMove.getMovement().getX() + ", " + newMove.getMovement().getY() + ", "
+                + newMove.getCard().getName());
         game.getBoard().printBoard();
         this.latestMoves.put(gameId, newMove);
 
         if (game.getCurrentPlayer().isAi()) {
             Move aiMove = gameService.playAiMove(game);
             this.latestMoves.put(gameId, aiMove);
-            System.out.println(aiMove.getPiece().getX() + ", " + aiMove.getPiece().getY() + ", "
+            System.out.println("Red played: " + aiMove.getPiece().getX() + ", " + aiMove.getPiece().getY() + ", "
                     + aiMove.getMovement().getX() + ", " + aiMove.getMovement().getY() + ", "
                     + aiMove.getCard().getName());
+            game.getBoard().printBoard();
+        }
+
+        if (game.getGameState() == Game.GameState.FINISHED) {
+            System.out.println("Player " + game.getCurrentPlayer().getColor() + " won the game");
         }
 
         return ResponseEntity.ok("Move accepted");
