@@ -65,7 +65,7 @@ public class KonradApiService {
             Move move = gameService.playAiMove(game);
             this.latestMoves.put(gameId, move);
             System.out.println(move.getPiece().getX() + ", " + move.getPiece().getY() + ", " + move.getMovement().getX()
-                    + ", " + move.getMovement().getY());
+                    + ", " + move.getMovement().getY() + ", " + move.getCard().getName());
         }
 
         return gameId;
@@ -88,6 +88,7 @@ public class KonradApiService {
 
     public ResponseEntity<String> submitMove(String gameId, KonradMoveObject move, PlayerColor playerColor) {
         Game game = games.get(gameId);
+
         if (game == null) {
             return ResponseEntity.status(404).body("Game not found");
         }
@@ -132,7 +133,8 @@ public class KonradApiService {
             Move aiMove = gameService.playAiMove(game);
             this.latestMoves.put(gameId, aiMove);
             System.out.println(aiMove.getPiece().getX() + ", " + aiMove.getPiece().getY() + ", "
-                    + aiMove.getMovement().getX() + ", " + aiMove.getMovement().getY());
+                    + aiMove.getMovement().getX() + ", " + aiMove.getMovement().getY() + ", "
+                    + aiMove.getCard().getName());
         }
 
         return ResponseEntity.ok("Move accepted");

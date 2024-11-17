@@ -36,7 +36,7 @@ public class Move {
         this.movement = move.movement;
         this.piece = new Piece(move.piece);
         this.capturedPiece = move.capturedPiece == null ? null : new Piece(move.capturedPiece);
-        this.card = new Card(move.card);
+        this.card = move.card;
     }
 
     @JsonCreator
