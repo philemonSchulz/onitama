@@ -393,6 +393,7 @@ public class GameService {
         Move move = null;
         if (game.getGameState() == GameState.IN_PROGRESS && game.getCurrentPlayer().isAi()) {
             move = generateAiMove(game);
+            move = new Move(move);
             processMove(game, move);
             switchTurn(game);
         }
@@ -410,7 +411,7 @@ public class GameService {
     public GameStats runRandomGame(Game game) {
         long currentTime = System.currentTimeMillis();
         while (game.getGameState() == GameState.IN_PROGRESS) {
-            Move move = RandomAi.getMove(game, true);
+            Move move = RandomAi.getMove(game, false);
             processMove(game, move);
             switchTurn(game);
         }

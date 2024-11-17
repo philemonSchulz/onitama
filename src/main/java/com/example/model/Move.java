@@ -32,6 +32,13 @@ public class Move {
         // Default constructor for deserialization
     }
 
+    public Move(Move move) {
+        this.movement = move.movement;
+        this.piece = new Piece(move.piece);
+        this.capturedPiece = move.capturedPiece == null ? null : new Piece(move.capturedPiece);
+        this.card = new Card(move.card);
+    }
+
     @JsonCreator
     public Move(@JsonProperty("move") Movement move, @JsonProperty("piece") Piece piece,
             @JsonProperty("capturedPiece") Piece capturedPiece, @JsonProperty("card") Card card) {

@@ -125,11 +125,14 @@ public class KonradApiService {
         }
 
         gameService.switchTurn(game);
+        game.getBoard().printBoard();
         this.latestMoves.put(gameId, newMove);
 
         if (game.getCurrentPlayer().isAi()) {
             Move aiMove = gameService.playAiMove(game);
             this.latestMoves.put(gameId, aiMove);
+            System.out.println(aiMove.getPiece().getX() + ", " + aiMove.getPiece().getY() + ", "
+                    + aiMove.getMovement().getX() + ", " + aiMove.getMovement().getY());
         }
 
         return ResponseEntity.ok("Move accepted");
