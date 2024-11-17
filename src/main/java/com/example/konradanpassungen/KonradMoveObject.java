@@ -13,10 +13,10 @@ public class KonradMoveObject {
     }
 
     public KonradMoveObject(Move move) {
-        this.x = move.getPiece().getX();
-        this.y = move.getPiece().getY();
-        this.movementX = move.getMovement().getX(move.getPiece().getColor());
-        this.movementY = move.getMovement().getY(move.getPiece().getColor());
+        this.x = 6 - move.getPiece().getY();
+        this.y = 6 - move.getPiece().getX();
+        this.movementX = -1 * move.getMovement().getY();
+        this.movementY = -1 * move.getMovement().getX();
         this.cardName = move.getCard().getName();
     }
 

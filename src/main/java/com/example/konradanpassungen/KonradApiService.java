@@ -98,12 +98,12 @@ public class KonradApiService {
             return ResponseEntity.status(400).body("Not your turn");
         }
 
-        Piece piece = game.getBoard().getTile(move.getX(), move.getY()).getPiece();
+        Piece piece = game.getBoard().getTile(6 - move.getY(), 6 - move.getX()).getPiece();
         if (piece == null || piece.getColor() != playerColor) {
             return ResponseEntity.status(400).body("Invalid move");
         }
 
-        Movement movement = new Movement(move.getMovementX(), move.getMovementY());
+        Movement movement = new Movement(-1 * move.getMovementY(), -1 * move.getMovementX());
 
         Card card = game.getBlueCardByName(move.getCardName());
         if (card == null) {
