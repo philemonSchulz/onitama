@@ -156,8 +156,8 @@ public class GameService {
     }
 
     public void dayTest() {
-        this.aiTypeRed = AiType.RANDOM;
-        this.aiTypeBlue = AiType.RANDOM_PRIOTIZING;
+        this.aiTypeRed = AiType.HEURISTIC;
+        this.aiTypeBlue = AiType.MCTS;
         this.biasA = 1700;
         this.biasB = 1700;
         runGames(60 * 60 * 1000, true);
@@ -255,7 +255,7 @@ public class GameService {
 
         long startTime = System.currentTimeMillis();
 
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter("playoutsRandomVsPrioVsHeuristic.txt", true))) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("test.txt", true))) {
             writer.write("Starting with agents: " + aiTypeRed + " and " + aiTypeBlue + ", Bias A: " + biasA
                     + ", Bias B: " + biasB + "C-Value A: " + cValueA + ", C-Value B: " + cValueB + ", Duration: "
                     + duration / 1000 / 60 + "min");
@@ -395,6 +395,16 @@ public class GameService {
      */
 
     public Move playAiMove(Game game) {
+        Move move = null;
+        if (game.getGameState() == GameState.IN_PROGRESS && game.getCurrentPlayer().isAi()) {
+            move = generateAiMove(game);
+            processMove(game, move);
+            switchTurn(game);
+        }
+        return move;
+    }
+
+    public Move playAiMoveKonrad(Game game) {
         Move move = null;
         if (game.getGameState() == GameState.IN_PROGRESS && game.getCurrentPlayer().isAi()) {
             move = generateAiMove(game);

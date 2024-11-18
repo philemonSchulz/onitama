@@ -95,7 +95,7 @@ public class MCTS {
                 backup(node, reward);
             }
         }
-        if (false) {
+        if (true) {
             System.out.println("Iterations: " + iterations + "Cvalue: " + cValue);
             game.getBoard().printBoard();
             for (Node child : rootNode.getChildren()) {

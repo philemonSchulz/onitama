@@ -62,7 +62,7 @@ public class KonradApiService {
 
         System.out.println("current player: " + game.getCurrentPlayer().getColor());
         if (game.getCurrentPlayer().getColor() == Player.PlayerColor.RED) {
-            Move move = gameService.playAiMove(game);
+            Move move = gameService.playAiMoveKonrad(game);
             System.out.println("Red played: " + move.getPiece().getX() + ", " + move.getPiece().getY() + ", "
                     + move.getMovement().getX() + ", " + move.getMovement().getY() + ", " + move.getCard().getName());
             game.getBoard().printBoard();
@@ -128,7 +128,7 @@ public class KonradApiService {
         this.latestMoves.put(gameId, newMove);
 
         if (game.getCurrentPlayer().isAi()) {
-            Move aiMove = gameService.playAiMove(game);
+            Move aiMove = gameService.playAiMoveKonrad(game);
             this.latestMoves.put(gameId, aiMove);
             System.out.println("Red played: " + aiMove.getPiece().getX() + ", " + aiMove.getPiece().getY() + ", "
                     + aiMove.getMovement().getX() + ", " + aiMove.getMovement().getY() + ", "
