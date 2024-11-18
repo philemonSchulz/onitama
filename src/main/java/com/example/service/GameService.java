@@ -398,7 +398,9 @@ public class GameService {
         Move move = null;
         if (game.getGameState() == GameState.IN_PROGRESS && game.getCurrentPlayer().isAi()) {
             move = generateAiMove(game);
-            processMove(game, move);
+            if (move != null) {
+                processMove(game, move);
+            }
             switchTurn(game);
         }
         return move;
@@ -409,7 +411,9 @@ public class GameService {
         if (game.getGameState() == GameState.IN_PROGRESS && game.getCurrentPlayer().isAi()) {
             move = generateAiMove(game);
             move = new Move(move);
-            processMove(game, move);
+            if (move != null) {
+                processMove(game, move);
+            }
             switchTurn(game);
         }
         return move;
@@ -418,7 +422,9 @@ public class GameService {
     public void playOwnMove(Game game) {
         if (game.getGameState() == GameState.IN_PROGRESS && !game.getCurrentPlayer().isAi()) {
             Move move = generateOwnMove(game);
-            processMove(game, move);
+            if (move != null) {
+                processMove(game, move);
+            }
             switchTurn(game);
         }
     }
@@ -427,7 +433,9 @@ public class GameService {
         long currentTime = System.currentTimeMillis();
         while (game.getGameState() == GameState.IN_PROGRESS) {
             Move move = RandomAi.getMove(game, false);
-            processMove(game, move);
+            if (move != null) {
+                processMove(game, move);
+            }
             switchTurn(game);
         }
 
@@ -441,7 +449,9 @@ public class GameService {
         }
         while (game.getGameState() == GameState.IN_PROGRESS) {
             Move move = RandomAi.getMove(game, true);
-            processMove(game, move);
+            if (move != null) {
+                processMove(game, move);
+            }
             switchTurn(game);
             playedMoves.add(move);
         }
@@ -458,10 +468,14 @@ public class GameService {
         while (game.getGameState() == GameState.IN_PROGRESS && iterations < 30) {
             if (game.getCurrentPlayer().getColor() == initialPlayer) {
                 Move move = new HeuristicAi(game).getMove(1, 1, 1);
-                processMove(game, move);
+                if (move != null) {
+                    processMove(game, move);
+                }
             } else {
                 Move move = RandomAi.getMove(game, true);
-                processMove(game, move);
+                if (move != null) {
+                    processMove(game, move);
+                }
             }
             switchTurn(game);
             iterations++;
