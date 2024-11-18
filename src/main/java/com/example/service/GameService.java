@@ -156,11 +156,11 @@ public class GameService {
     }
 
     public void dayTest() {
-        this.aiTypeRed = AiType.MCTS;
-        this.aiTypeBlue = AiType.RAVE_MCTS;
+        this.aiTypeRed = AiType.RANDOM_PRIOTIZING;
+        this.aiTypeBlue = AiType.HEURISTIC;
         this.biasA = 1700;
         this.biasB = 1700;
-        runGames(240 * 60 * 1000, true);
+        runGames(60 * 60 * 1000, true);
     }
 
     public void runCustomTestsWithAbortLimit() {
@@ -252,7 +252,7 @@ public class GameService {
 
         long startTime = System.currentTimeMillis();
 
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter("playoutsRave3.txt", true))) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("playouts1.txt", true))) {
             writer.write("Starting with agents: " + aiTypeRed + " and " + aiTypeBlue + ", Bias A: " + biasA
                     + ", Bias B: " + biasB + "C-Value A: " + cValueA + ", C-Value B: " + cValueB + ", Duration: "
                     + duration / 1000 / 60 + "min");
