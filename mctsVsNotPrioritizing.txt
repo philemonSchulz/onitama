@@ -1,0 +1,70 @@
+Starting with agents: MCTS and MCTS, Bias A: 1700.0, Bias B: 1700.0C-Value A: 0.3, C-Value B: 0.3, Duration: 120min
+Game duration: 100.0s(1.6666666666666667min), Winner pieces: 6, Loser pieces: 0, Temple win: false, Starting color: BLUE
+Red wins: 1, Blue wins: 0, Avg Duration: 100.0, Avg. Winner Pieces: 6.0, Avg. Loser Pieces: 0.0, Avg. Temple Wins: 0.0, Avg. Winner is Starting Player: 0.0, Aborted Matches: 0
+
+A match took too long and was aborted.
+A match took too long and was aborted.
+Game duration: 302.0s(5.033333333333333min), Winner pieces: 6, Loser pieces: 0, Temple win: false, Starting color: RED
+Red wins: 2, Blue wins: 0, Avg Duration: 100.5, Avg. Winner Pieces: 3.0, Avg. Loser Pieces: 0.0, Avg. Temple Wins: 0.0, Avg. Winner is Starting Player: 0.25, Aborted Matches: 2
+
+Game duration: 488.0s(8.133333333333333min), Winner pieces: 6, Loser pieces: 0, Temple win: false, Starting color: BLUE
+Red wins: 3, Blue wins: 0, Avg Duration: 178.0, Avg. Winner Pieces: 3.6, Avg. Loser Pieces: 0.0, Avg. Temple Wins: 0.0, Avg. Winner is Starting Player: 0.2, Aborted Matches: 2
+
+Game duration: 90.0s(1.5min), Winner pieces: 7, Loser pieces: 3, Temple win: false, Starting color: RED
+Red wins: 4, Blue wins: 0, Avg Duration: 163.33333333333334, Avg. Winner Pieces: 4.166666666666667, Avg. Loser Pieces: 0.5, Avg. Temple Wins: 0.0, Avg. Winner is Starting Player: 0.3333333333333333, Aborted Matches: 2
+
+Game duration: 218.0s(3.6333333333333333min), Winner pieces: 6, Loser pieces: 0, Temple win: false, Starting color: RED
+Red wins: 5, Blue wins: 0, Avg Duration: 171.14285714285714, Avg. Winner Pieces: 4.428571428571429, Avg. Loser Pieces: 0.42857142857142855, Avg. Temple Wins: 0.0, Avg. Winner is Starting Player: 0.42857142857142855, Aborted Matches: 2
+
+Game duration: 122.0s(2.033333333333333min), Winner pieces: 6, Loser pieces: 0, Temple win: false, Starting color: RED
+Red wins: 6, Blue wins: 0, Avg Duration: 165.0, Avg. Winner Pieces: 4.625, Avg. Loser Pieces: 0.375, Avg. Temple Wins: 0.0, Avg. Winner is Starting Player: 0.5, Aborted Matches: 2
+
+Game duration: 118.0s(1.9666666666666666min), Winner pieces: 6, Loser pieces: 0, Temple win: false, Starting color: RED
+Red wins: 7, Blue wins: 0, Avg Duration: 159.77777777777777, Avg. Winner Pieces: 4.777777777777778, Avg. Loser Pieces: 0.3333333333333333, Avg. Temple Wins: 0.0, Avg. Winner is Starting Player: 0.5555555555555556, Aborted Matches: 2
+
+Game duration: 142.0s(2.3666666666666667min), Winner pieces: 7, Loser pieces: 0, Temple win: false, Starting color: RED
+Red wins: 8, Blue wins: 0, Avg Duration: 158.0, Avg. Winner Pieces: 5.0, Avg. Loser Pieces: 0.3, Avg. Temple Wins: 0.0, Avg. Winner is Starting Player: 0.6, Aborted Matches: 2
+
+Game duration: 144.0s(2.4min), Winner pieces: 5, Loser pieces: 0, Temple win: false, Starting color: BLUE
+Red wins: 9, Blue wins: 0, Avg Duration: 156.72727272727272, Avg. Winner Pieces: 5.0, Avg. Loser Pieces: 0.2727272727272727, Avg. Temple Wins: 0.0, Avg. Winner is Starting Player: 0.5454545454545454, Aborted Matches: 2
+
+Game duration: 246.0s(4.1min), Winner pieces: 6, Loser pieces: 0, Temple win: false, Starting color: RED
+Red wins: 10, Blue wins: 0, Avg Duration: 164.16666666666666, Avg. Winner Pieces: 5.083333333333333, Avg. Loser Pieces: 0.25, Avg. Temple Wins: 0.0, Avg. Winner is Starting Player: 0.5833333333333334, Aborted Matches: 2
+
+Game duration: 222.0s(3.7min), Winner pieces: 7, Loser pieces: 0, Temple win: false, Starting color: RED
+Red wins: 11, Blue wins: 0, Avg Duration: 168.6153846153846, Avg. Winner Pieces: 5.230769230769231, Avg. Loser Pieces: 0.23076923076923078, Avg. Temple Wins: 0.0, Avg. Winner is Starting Player: 0.6153846153846154, Aborted Matches: 2
+
+A match took too long and was aborted.
+A match took too long and was aborted.
+Game duration: 498.0s(8.3min), Winner pieces: 6, Loser pieces: 0, Temple win: false, Starting color: RED
+Red wins: 12, Blue wins: 0, Avg Duration: 168.125, Avg. Winner Pieces: 4.625, Avg. Loser Pieces: 0.1875, Avg. Temple Wins: 0.0, Avg. Winner is Starting Player: 0.5625, Aborted Matches: 4
+
+Game duration: 456.0s(7.6min), Winner pieces: 7, Loser pieces: 0, Temple win: false, Starting color: BLUE
+Red wins: 13, Blue wins: 0, Avg Duration: 185.05882352941177, Avg. Winner Pieces: 4.764705882352941, Avg. Loser Pieces: 0.17647058823529413, Avg. Temple Wins: 0.0, Avg. Winner is Starting Player: 0.5294117647058824, Aborted Matches: 4
+
+Game duration: 348.0s(5.8min), Winner pieces: 6, Loser pieces: 0, Temple win: false, Starting color: BLUE
+Red wins: 14, Blue wins: 0, Avg Duration: 194.11111111111111, Avg. Winner Pieces: 4.833333333333333, Avg. Loser Pieces: 0.16666666666666666, Avg. Temple Wins: 0.0, Avg. Winner is Starting Player: 0.5, Aborted Matches: 4
+
+A match took too long and was aborted.
+Game duration: 234.0s(3.9min), Winner pieces: 7, Loser pieces: 0, Temple win: false, Starting color: RED
+Red wins: 15, Blue wins: 0, Avg Duration: 186.4, Avg. Winner Pieces: 4.7, Avg. Loser Pieces: 0.15, Avg. Temple Wins: 0.0, Avg. Winner is Starting Player: 0.5, Aborted Matches: 5
+
+Game duration: 258.0s(4.3min), Winner pieces: 7, Loser pieces: 0, Temple win: false, Starting color: RED
+Red wins: 16, Blue wins: 0, Avg Duration: 189.8095238095238, Avg. Winner Pieces: 4.809523809523809, Avg. Loser Pieces: 0.14285714285714285, Avg. Temple Wins: 0.0, Avg. Winner is Starting Player: 0.5238095238095238, Aborted Matches: 5
+
+Game duration: 158.0s(2.6333333333333333min), Winner pieces: 6, Loser pieces: 0, Temple win: false, Starting color: RED
+Red wins: 17, Blue wins: 0, Avg Duration: 188.36363636363637, Avg. Winner Pieces: 4.863636363636363, Avg. Loser Pieces: 0.13636363636363635, Avg. Temple Wins: 0.0, Avg. Winner is Starting Player: 0.5454545454545454, Aborted Matches: 5
+
+Game duration: 96.0s(1.6min), Winner pieces: 5, Loser pieces: 0, Temple win: false, Starting color: BLUE
+Red wins: 18, Blue wins: 0, Avg Duration: 184.34782608695653, Avg. Winner Pieces: 4.869565217391305, Avg. Loser Pieces: 0.13043478260869565, Avg. Temple Wins: 0.0, Avg. Winner is Starting Player: 0.5217391304347826, Aborted Matches: 5
+
+Red wins: 18, Blue wins: 0
+-----------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------
+
+

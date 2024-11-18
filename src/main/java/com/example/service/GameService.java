@@ -160,7 +160,7 @@ public class GameService {
         this.aiTypeBlue = AiType.RAVE_MCTS;
         this.biasA = 1700;
         this.biasB = 1700;
-        runGames(240 * 60 * 1000, true);
+        runGames(360 * 60 * 1000, true);
     }
 
     public void runCustomTestsWithAbortLimit() {
@@ -252,7 +252,7 @@ public class GameService {
 
         long startTime = System.currentTimeMillis();
 
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter("playoutsRave3.txt", true))) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("playouts3.txt", true))) {
             writer.write("Starting with agents: " + aiTypeRed + " and " + aiTypeBlue + ", Bias A: " + biasA
                     + ", Bias B: " + biasB + "C-Value A: " + cValueA + ", C-Value B: " + cValueB + ", Duration: "
                     + duration / 1000 / 60 + "min");
@@ -409,10 +409,10 @@ public class GameService {
         }
     }
 
-    public GameStats runRandomGame(Game game) {
+    public GameStats runRandomGame(Game game, boolean usePriortizing) {
         long currentTime = System.currentTimeMillis();
         while (game.getGameState() == GameState.IN_PROGRESS) {
-            Move move = RandomAi.getMove(game, false);
+            Move move = RandomAi.getMove(game, usePriortizing);
             processMove(game, move);
             switchTurn(game);
         }
@@ -529,7 +529,8 @@ public class GameService {
             case MCTS -> {
                 MCTS mcts = new MCTS();
                 move = mcts.uctSearch(game, true,
-                        game.getCurrentPlayer().getColor() == PlayerColor.RED ? cValueA : cValueB);
+                        game.getCurrentPlayer().getColor() == PlayerColor.RED ? cValueA : cValueB,
+                        game.getCurrentPlayer().getColor() == PlayerColor.RED ? true : true);
             }
             case RAVE_MCTS -> {
                 MCTSRave raveMcts = new MCTSRave();

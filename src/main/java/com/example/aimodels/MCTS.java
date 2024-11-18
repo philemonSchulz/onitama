@@ -15,6 +15,7 @@ import com.example.service.GameService;
 public class MCTS {
     private double CVALUE = 0.5;
     private Player currentPlayer;
+    private boolean usePriortizing;
 
     private long duration = 0;
     private int durationCounter = 0;
@@ -73,9 +74,10 @@ public class MCTS {
         }
     }
 
-    public Move uctSearch(Game game, boolean useTimeInsteadOfIterations, double cValue) {
+    public Move uctSearch(Game game, boolean useTimeInsteadOfIterations, double cValue, boolean usePriortizing) {
         this.CVALUE = cValue;
         this.currentPlayer = game.getCurrentPlayer();
+        this.usePriortizing = usePriortizing;
         Node rootNode = new Node(new MctsState(new Game(game)), null);
         int iterations = 0;
 
@@ -191,7 +193,7 @@ public class MCTS {
             if (game.getGameState() == GameState.FINISHED) {
                 return 0;
             }
-            GameStats gameStats = gameService.runRandomGame(newGame);
+            GameStats gameStats = gameService.runRandomGame(newGame, usePriortizing);
             duration += gameStats.getDuration();
             durationCounter++;
             this.winner = gameStats.getWinner().getColor();
