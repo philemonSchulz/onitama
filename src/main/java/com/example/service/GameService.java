@@ -156,10 +156,13 @@ public class GameService {
     }
 
     public void dayTest() {
-        this.aiTypeRed = AiType.RANDOM_PRIOTIZING;
-        this.aiTypeBlue = AiType.HEURISTIC;
+        this.aiTypeRed = AiType.RANDOM;
+        this.aiTypeBlue = AiType.RANDOM_PRIOTIZING;
         this.biasA = 1700;
         this.biasB = 1700;
+        runGames(60 * 60 * 1000, true);
+        this.aiTypeRed = AiType.RANDOM_PRIOTIZING;
+        this.aiTypeBlue = AiType.HEURISTIC;
         runGames(60 * 60 * 1000, true);
     }
 
@@ -252,13 +255,14 @@ public class GameService {
 
         long startTime = System.currentTimeMillis();
 
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter("playouts1.txt", true))) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("playoutsRandomVsPrioVsHeuristic.txt", true))) {
             writer.write("Starting with agents: " + aiTypeRed + " and " + aiTypeBlue + ", Bias A: " + biasA
                     + ", Bias B: " + biasB + "C-Value A: " + cValueA + ", C-Value B: " + cValueB + ", Duration: "
                     + duration / 1000 / 60 + "min");
             writer.newLine();
             if (useAbort) {
-                while (System.currentTimeMillis() - startTime < duration) {
+                // while (System.currentTimeMillis() - startTime < duration) {
+                for (int i = 0; i < 500; i++) {
                     ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
                     Future<GameStats> future = executorService.submit(() -> aiVsAi(aiTypeRed, aiTypeBlue));
 
