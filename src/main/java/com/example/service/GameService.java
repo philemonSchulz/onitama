@@ -27,6 +27,7 @@ import com.example.model.Game;
 import com.example.model.Player;
 import com.example.model.Game.GameState;
 import com.example.model.GameStats;
+import com.example.model.MCTSMoveObject;
 import com.example.model.Move;
 import com.example.model.Piece;
 import com.example.model.Piece.PieceType;
@@ -41,6 +42,13 @@ public class GameService {
     private double biasB = 300;
     private AiType aiTypeRed = AiType.RAVE_MCTS;
     private AiType aiTypeBlue = AiType.RAVE_MCTS;
+
+    private double mctsIterations = 0;
+    private double mctsCounter = 0;
+    private double raveIterations = 0;
+    private double raveCounter = 0;
+    private double heuristicIterations = 0;
+    private double heuristicCounter = 0;
 
     public boolean playerVsAi(AiType aiType) {
         Game game = new Game(UUID.randomUUID().toString());
@@ -156,7 +164,7 @@ public class GameService {
     }
 
     public void dayTest() {
-        this.aiTypeRed = AiType.HEURISTIC;
+        this.aiTypeRed = AiType.RAVE_MCTS;
         this.aiTypeBlue = AiType.MCTS;
         this.biasA = 1700;
         this.biasB = 1700;
@@ -252,10 +260,13 @@ public class GameService {
         int redwins = 0;
         int bluewins = 0;
         int overallMatches = 0;
+        double avgMctsIterations = 0;
+        double avgRaveIterations = 0;
+        double avgHeuristicIterations = 0;
 
         long startTime = System.currentTimeMillis();
 
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter("test.txt", true))) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("test2.txt", true))) {
             writer.write("Starting with agents: " + aiTypeRed + " and " + aiTypeBlue + ", Bias A: " + biasA
                     + ", Bias B: " + biasB + "C-Value A: " + cValueA + ", C-Value B: " + cValueB + ", Duration: "
                     + duration / 1000 / 60 + "min");
@@ -263,6 +274,12 @@ public class GameService {
             if (useAbort) {
                 // while (System.currentTimeMillis() - startTime < duration) {
                 for (int i = 0; i < 500; i++) {
+                    this.mctsIterations = 0;
+                    this.mctsCounter = 0;
+                    this.raveIterations = 0;
+                    this.raveCounter = 0;
+                    this.heuristicIterations = 0;
+                    this.heuristicCounter = 0;
                     ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
                     Future<GameStats> future = executorService.submit(() -> aiVsAi(aiTypeRed, aiTypeBlue));
 
@@ -279,6 +296,10 @@ public class GameService {
                         if (stats.isWinThroughTemple()) {
                             templeWins++;
                         }
+
+                        avgMctsIterations = mctsIterations / mctsCounter;
+                        avgRaveIterations = raveIterations / raveCounter;
+                        avgHeuristicIterations = heuristicIterations / heuristicCounter;
 
                         String result = "Game duration: " + gameDuration + "s" + "(" + gameDuration / 60
                                 + "min), Winner pieces: " + stats.getPieceCountWinner() + ", Loser pieces: "
@@ -300,8 +321,12 @@ public class GameService {
                                 + winnerPieces / overallMatches + ", Avg. Loser Pieces: " + loserPieces / overallMatches
                                 + ", Avg. Temple Wins: " + templeWins / overallMatches
                                 + ", Avg. Winner is Starting Player: "
-                                + winnerIsStartingPlayer / overallMatches + ", Aborted Matches: " + abortedMatches;
-
+                                + winnerIsStartingPlayer / overallMatches + ", Aborted Matches: " + abortedMatches
+                                + ", Avg. MCTS Iterations: " + avgMctsIterations / overallMatches
+                                + ", Avg. RAVE Iterations: "
+                                + avgRaveIterations / overallMatches + ", Avg. Heuristic Iterations: "
+                                + avgHeuristicIterations / overallMatches;
+                        System.out.println(summary);
                         writer.write(summary);
                         writer.newLine();
                         writer.newLine();
@@ -556,17 +581,26 @@ public class GameService {
             }
             case MCTS -> {
                 MCTS mcts = new MCTS();
-                move = mcts.uctSearch(game, true,
+                MCTSMoveObject object = mcts.uctSearch(game, true,
                         game.getCurrentPlayer().getColor() == PlayerColor.RED ? cValueA : cValueB);
+                move = object.getMove();
+                mctsIterations += object.getIterations();
+                mctsCounter++;
             }
             case RAVE_MCTS -> {
                 MCTSRave raveMcts = new MCTSRave();
-                move = raveMcts.raveUctSearch(game, true,
+                MCTSMoveObject object = raveMcts.raveUctSearch(game, true,
                         game.getCurrentPlayer().getColor() == PlayerColor.RED ? biasA : biasB);
+                move = object.getMove();
+                raveIterations += object.getIterations();
+                raveCounter++;
             }
             case HEURISTIC_MCTS -> {
                 MCTSHeuristic heuristicMcts = new MCTSHeuristic();
-                move = heuristicMcts.uctSearchWithHeurisitc(game, true, 0.3);
+                MCTSMoveObject object = heuristicMcts.uctSearchWithHeurisitc(game, true, 0.3);
+                move = object.getMove();
+                heuristicIterations += object.getIterations();
+                heuristicCounter++;
             }
             default -> move = RandomAi.getMove(game, false);
         }

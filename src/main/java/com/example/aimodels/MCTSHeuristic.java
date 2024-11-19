@@ -7,6 +7,7 @@ import com.example.controller.MoveController;
 import com.example.model.Game;
 import com.example.model.Game.GameState;
 import com.example.model.GameStats;
+import com.example.model.MCTSMoveObject;
 import com.example.model.Move;
 import com.example.model.Player;
 import com.example.model.Player.PlayerColor;
@@ -77,7 +78,7 @@ public class MCTSHeuristic {
         }
     }
 
-    public Move uctSearchWithHeurisitc(Game game, boolean useTimeInsteadOfIterations, double cValue) {
+    public MCTSMoveObject uctSearchWithHeurisitc(Game game, boolean useTimeInsteadOfIterations, double cValue) {
         this.CVALUE = cValue;
         this.currentPlayer = game.getCurrentPlayer();
         Node rootNode = new Node(new MctsState(new Game(game)), null);
@@ -117,7 +118,7 @@ public class MCTSHeuristic {
                 + bestMove.getMovement().getX(currentPlayer.getColor()) + " "
                 + bestMove.getMovement().getY(currentPlayer.getColor()));
         System.out.println("Average duration: " + duration / (durationCounter / 1));
-        return bestChild(rootNode, 0).getIncomingMove();
+        return new MCTSMoveObject(bestChild(rootNode, 0).getIncomingMove(), iterations);
     }
 
     public Node treePolicy(Node node) {

@@ -6,6 +6,7 @@ import java.util.List;
 import com.example.controller.MoveController;
 import com.example.model.Game;
 import com.example.model.GameStats;
+import com.example.model.MCTSMoveObject;
 import com.example.model.Move;
 import com.example.model.Player;
 import com.example.model.Game.GameState;
@@ -73,7 +74,7 @@ public class MCTS {
         }
     }
 
-    public Move uctSearch(Game game, boolean useTimeInsteadOfIterations, double cValue) {
+    public MCTSMoveObject uctSearch(Game game, boolean useTimeInsteadOfIterations, double cValue) {
         this.CVALUE = cValue;
         this.currentPlayer = game.getCurrentPlayer();
         Node rootNode = new Node(new MctsState(new Game(game)), null);
@@ -95,7 +96,7 @@ public class MCTS {
                 backup(node, reward);
             }
         }
-        if (true) {
+        if (false) {
             System.out.println("Iterations: " + iterations + "Cvalue: " + cValue);
             game.getBoard().printBoard();
             for (Node child : rootNode.getChildren()) {
@@ -116,7 +117,7 @@ public class MCTS {
             System.out.println("Avg Duration: " + duration / (durationCounter / 1));
         }
 
-        return bestMove;
+        return new MCTSMoveObject(bestMove, iterations);
     }
 
     public Node treePolicy(Node node) {

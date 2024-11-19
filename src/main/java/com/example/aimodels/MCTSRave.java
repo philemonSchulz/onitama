@@ -8,6 +8,7 @@ import java.util.Map;
 import com.example.controller.MoveController;
 import com.example.helperObjects.SimulationResult;
 import com.example.model.Game;
+import com.example.model.MCTSMoveObject;
 import com.example.model.Move;
 import com.example.model.Player;
 import com.example.model.Player.PlayerColor;
@@ -21,7 +22,7 @@ public class MCTSRave {
     private double bias;
     private double biasCOunter;
 
-    public Move raveUctSearch(Game game, boolean useTimeInsteadOfIterations, double raveBias) {
+    public MCTSMoveObject raveUctSearch(Game game, boolean useTimeInsteadOfIterations, double raveBias) {
         Node rootNode = new Node(new MctsState(game), null, null);
         this.RAVE_BIAS = raveBias;
 
@@ -54,7 +55,7 @@ public class MCTSRave {
                     + bestMove.getMovement().getY(currentPlayer.getColor()));
         }
 
-        return bestMove;
+        return new MCTSMoveObject(bestMove, iterations);
     }
 
     public Node treePolicy(Node node) {
@@ -115,6 +116,9 @@ public class MCTSRave {
                         + "\t Rave reward: " + child.getRaveReward() + "\t Winrate: "
                         + (child.getRaveWinRate()) + "\t Rave Value: " + raveValue
                         + "\t UCT: " + uctValue);
+            }
+            if (raveValue > 0.99) {
+                return child;
             }
 
             if (raveValue > bestValue) {
