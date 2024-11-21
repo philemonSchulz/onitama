@@ -272,8 +272,7 @@ public class GameService {
                     + duration / 1000 / 60 + "min");
             writer.newLine();
             if (useAbort) {
-                // while (System.currentTimeMillis() - startTime < duration) {
-                for (int i = 0; i < 500; i++) {
+                while (System.currentTimeMillis() - startTime < duration) {
                     this.mctsIterations = 0;
                     this.mctsCounter = 0;
                     this.raveIterations = 0;
@@ -297,9 +296,9 @@ public class GameService {
                             templeWins++;
                         }
 
-                        avgMctsIterations = mctsIterations / mctsCounter;
-                        avgRaveIterations = raveIterations / raveCounter;
-                        avgHeuristicIterations = heuristicIterations / heuristicCounter;
+                        avgMctsIterations += mctsIterations / mctsCounter;
+                        avgRaveIterations += raveIterations / raveCounter;
+                        avgHeuristicIterations += heuristicIterations / heuristicCounter;
 
                         String result = "Game duration: " + gameDuration + "s" + "(" + gameDuration / 60
                                 + "min), Winner pieces: " + stats.getPieceCountWinner() + ", Loser pieces: "
@@ -457,7 +456,7 @@ public class GameService {
     public GameStats runRandomGame(Game game) {
         long currentTime = System.currentTimeMillis();
         while (game.getGameState() == GameState.IN_PROGRESS) {
-            Move move = RandomAi.getMove(game, false);
+            Move move = RandomAi.getMove(game, true);
             if (move != null) {
                 processMove(game, move);
             }

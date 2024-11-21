@@ -21,8 +21,9 @@ public class KonradGameController {
     private KonradApiService apiService;
 
     @PostMapping("/create")
-    public ResponseEntity<String> createGameKonrad(@RequestParam("cards") String[] cards) {
-        String gameId = apiService.createGame(cards);
+    public ResponseEntity<String> createGameKonrad(@RequestParam("cards") String[] cards,
+            @RequestParam("aiType") String aiType) {
+        String gameId = apiService.createGame(cards, aiType);
         return ResponseEntity.ok(gameId);
     }
 
@@ -61,6 +62,15 @@ public class KonradGameController {
         Game game = apiService.getGameById(gameId);
         if (game != null) {
             return ResponseEntity.ok(game.getGameState() == GameState.FINISHED);
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    @GetMapping("/{gameId}/getResult")
+    public ResponseEntity<KonradResultObject> getResult(@PathVariable("gameId") String gameId) {
+        Game game = apiService.getGameById(gameId);
+        if (game != null && game.getGameState() == GameState.FINISHED) {
+            return ResponseEntity.ok(new KonradResultObject(game));
         }
         return ResponseEntity.notFound().build();
     }
