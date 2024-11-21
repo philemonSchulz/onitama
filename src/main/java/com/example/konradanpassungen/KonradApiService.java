@@ -60,12 +60,8 @@ public class KonradApiService {
         games.put(gameId, game);
         game.setGameState(Game.GameState.IN_PROGRESS);
 
-        System.out.println("current player start: " + game.getCurrentPlayer().getColor());
         if (game.getCurrentPlayer().getColor() == Player.PlayerColor.RED) {
             Move move = gameService.playAiMoveKonrad(game);
-            System.out.println("Red played: " + move.getPiece().getX() + ", " + move.getPiece().getY() + ", "
-                    + move.getMovement().getX() + ", " + move.getMovement().getY() + ", " + move.getCard().getName());
-            game.getBoard().printBoard();
             this.latestMoves.put(gameId, move);
         }
 
@@ -102,8 +98,6 @@ public class KonradApiService {
             return ResponseEntity.status(400).body("Not your turn");
         }
 
-        System.out.println(move.getX() + ", " + move.getY() + ", " + move.getMovementX() + ", " + move.getMovementY()
-                + ", " + move.getCardName());
         Piece piece = game.getBoard().getTile(6 - move.getY(), 6 - move.getX()).getPiece();
         if (piece == null || piece.getColor() != playerColor) {
             return ResponseEntity.status(400).body("Invalid move");
@@ -124,19 +118,11 @@ public class KonradApiService {
         }
 
         gameService.switchTurn(game);
-        System.out.println("Blue played: " + newMove.getPiece().getX() + ", " + newMove.getPiece().getY() + ", "
-                + newMove.getMovement().getX() + ", " + newMove.getMovement().getY() + ", "
-                + newMove.getCard().getName());
-        game.getBoard().printBoard();
         this.latestMoves.put(gameId, newMove);
 
         if (game.getCurrentPlayer().isAi()) {
             Move aiMove = gameService.playAiMoveKonrad(game);
             this.latestMoves.put(gameId, aiMove);
-            System.out.println("Red played: " + aiMove.getPiece().getX() + ", " + aiMove.getPiece().getY() + ", "
-                    + aiMove.getMovement().getX() + ", " + aiMove.getMovement().getY() + ", "
-                    + aiMove.getCard().getName());
-            game.getBoard().printBoard();
         }
 
         if (game.getGameState() == Game.GameState.FINISHED) {

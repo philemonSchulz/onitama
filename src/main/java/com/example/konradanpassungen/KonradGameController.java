@@ -28,8 +28,8 @@ public class KonradGameController {
     }
 
     @GetMapping(("/test"))
-    public ResponseEntity<String> test() {
-        return ResponseEntity.ok("Test");
+    public ResponseEntity<KonradResultObject> test() {
+        return ResponseEntity.ok(new KonradResultObject("RED", 1000, true));
     }
 
     @GetMapping("/{gameId}/isMyTurn/{playerColor}")
@@ -70,7 +70,9 @@ public class KonradGameController {
     public ResponseEntity<KonradResultObject> getResult(@PathVariable("gameId") String gameId) {
         Game game = apiService.getGameById(gameId);
         if (game != null && game.getGameState() == GameState.FINISHED) {
-            return ResponseEntity.ok(new KonradResultObject(game));
+            KonradResultObject result = new KonradResultObject(game);
+            System.out.println(game.isWinTroughTemple() + ", " + game.getGameId() + ", " + result.isTempleWin());
+            return ResponseEntity.ok(result);
         }
         return ResponseEntity.notFound().build();
     }
