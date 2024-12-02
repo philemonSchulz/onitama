@@ -16,6 +16,10 @@ The Onitama program provides a terminal interface for playing the board game Oni
    - **AI vs. AI**: Observe matches between different AI models for analysis
 3. **Online Play**: Connect to the Onitama API for multiplayer games or matches against server-side AI.
 
+## Requirements
+
+To run the project, you need to install a Java 22 JDK as well as Maven. Afterward, a Maven install has to be executed to install the required plugins.
+
 ## Getting Started
 To start playing, you need to execute the Client.java file.
 
