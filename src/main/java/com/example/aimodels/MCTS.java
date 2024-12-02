@@ -14,7 +14,7 @@ import com.example.model.Player.PlayerColor;
 import com.example.service.GameService;
 
 public class MCTS {
-    private double CVALUE = 0.5;
+    private double CVALUE = 0.3;
     private Player currentPlayer;
 
     private long duration = 0;

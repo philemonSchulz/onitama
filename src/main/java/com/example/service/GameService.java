@@ -18,7 +18,6 @@ import com.example.aimodels.HeuristicAi;
 import com.example.aimodels.MCTSHeuristic;
 import com.example.aimodels.MCTS;
 import com.example.aimodels.MCTSRave;
-import com.example.aimodels.MCTSRave;
 import com.example.aimodels.RandomAi;
 import com.example.controller.MoveController;
 import com.example.helperObjects.SimulationResult;
@@ -169,9 +168,6 @@ public class GameService {
         this.biasA = 1700;
         this.biasB = 1700;
         runGames(60 * 60 * 1000, true);
-        this.aiTypeRed = AiType.RANDOM_PRIOTIZING;
-        this.aiTypeBlue = AiType.HEURISTIC;
-        runGames(60 * 60 * 1000, true);
     }
 
     public void runCustomTestsWithAbortLimit() {
@@ -264,9 +260,16 @@ public class GameService {
         double avgRaveIterations = 0;
         double avgHeuristicIterations = 0;
 
+        this.mctsIterations = 0;
+        this.mctsCounter = 0;
+        this.raveIterations = 0;
+        this.raveCounter = 0;
+        this.heuristicIterations = 0;
+        this.heuristicCounter = 0;
+
         long startTime = System.currentTimeMillis();
 
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter("test2.txt", true))) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("test3.txt", true))) {
             writer.write("Starting with agents: " + aiTypeRed + " and " + aiTypeBlue + ", Bias A: " + biasA
                     + ", Bias B: " + biasB + "C-Value A: " + cValueA + ", C-Value B: " + cValueB + ", Duration: "
                     + duration / 1000 / 60 + "min");

@@ -39,7 +39,7 @@ public class MCTSRave {
         }
 
         currentPlayer = game.getCurrentPlayer();
-        if (false) {
+        if (true) {
             System.out.println("Iterations: " + iterations);
             System.out.println(rootNode.getVisits());
             game.getBoard().printBoard();
