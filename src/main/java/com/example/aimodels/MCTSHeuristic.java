@@ -10,19 +10,10 @@ import com.example.model.GameStats;
 import com.example.model.MCTSMoveObject;
 import com.example.model.Move;
 import com.example.model.Player;
-import com.example.model.Player.PlayerColor;
 import com.example.service.GameService;
 
 public class MCTSHeuristic {
-    public static final double PieceWeight = 1;
-    public static final double PositionWeight = 1;
-    public static final double MobilityWeight = 1;
-
-    private double CVALUE = 0.5;
-    private Player currentPlayer;
-
-    private long duration = 0;
-    private int durationCounter = 0;
+    private double CVALUE = 0.3;
 
     public class Node {
         private Node parent;
@@ -78,9 +69,7 @@ public class MCTSHeuristic {
         }
     }
 
-    public MCTSMoveObject uctSearchWithHeurisitc(Game game, boolean useTimeInsteadOfIterations, double cValue) {
-        this.CVALUE = cValue;
-        this.currentPlayer = game.getCurrentPlayer();
+    public MCTSMoveObject uctSearchWithHeurisitc(Game game, boolean useTimeInsteadOfIterations) {
         Node rootNode = new Node(new MctsState(new Game(game)), null);
         int iterations = 0;
 
@@ -100,24 +89,8 @@ public class MCTSHeuristic {
                 backup(node, reward);
             }
         }
-        if (true) {
-            System.out.println("Iterations: " + iterations);
-            game.getBoard().printBoard();
-            for (Node child : rootNode.getChildren()) {
-                System.out.println("Move: " + child.getIncomingMove().getPiece().getName() + " "
-                        + child.getIncomingMove().getMovement().getX(currentPlayer.getColor()) + " "
-                        + child.getIncomingMove().getMovement().getY(currentPlayer.getColor()) + "\t Reward: "
-                        + child.getReward()
-                        + "\t Visits: " + child.getVisits() + "\t Winrate: " + (child.getReward() / child.getVisits()));
-            }
-        }
-        // TODO: Nicht die beste quote, sondern node mit meisten Simulationen
-        // zurückgeben
+
         Move bestMove = bestChild(rootNode, 0).getIncomingMove();
-        System.out.println("Best move: " + bestMove.getPiece().getName() + " "
-                + bestMove.getMovement().getX(currentPlayer.getColor()) + " "
-                + bestMove.getMovement().getY(currentPlayer.getColor()));
-        System.out.println("Average duration: " + duration / (durationCounter / 1));
         return new MCTSMoveObject(bestChild(rootNode, 0).getIncomingMove(), iterations);
     }
 
@@ -193,8 +166,6 @@ public class MCTSHeuristic {
                 return 0;
             }
             GameStats gameStats = gameService.runRandomHeuristicGame(newGame);
-            duration += gameStats.getDuration();
-            durationCounter++;
             return gameStats.getWinner().getColor() == game.getCurrentPlayer().getColor() ? 1 : 0;
         }
 

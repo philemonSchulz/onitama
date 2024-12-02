@@ -10,21 +10,16 @@ import com.example.helperObjects.SimulationResult;
 import com.example.model.Game;
 import com.example.model.MCTSMoveObject;
 import com.example.model.Move;
-import com.example.model.Player;
 import com.example.model.Player.PlayerColor;
 import com.example.service.GameService;
 
 public class MCTSRave {
 
     private static final double CVALUE = 0.3;
-    private double RAVE_BIAS = 15;
-    private Player currentPlayer;
-    private double bias;
-    private double biasCOunter;
+    private double RAVE_BIAS = 1700;
 
-    public MCTSMoveObject raveUctSearch(Game game, boolean useTimeInsteadOfIterations, double raveBias) {
+    public MCTSMoveObject raveUctSearch(Game game, boolean useTimeInsteadOfIterations) {
         Node rootNode = new Node(new MctsState(game), null, null);
-        this.RAVE_BIAS = raveBias;
 
         int iterations = 0;
         long startTime = System.currentTimeMillis();
@@ -38,22 +33,7 @@ public class MCTSRave {
             iterations++;
         }
 
-        currentPlayer = game.getCurrentPlayer();
-        if (true) {
-            System.out.println("Iterations: " + iterations);
-            System.out.println(rootNode.getVisits());
-            game.getBoard().printBoard();
-            System.out.println(RAVE_BIAS);
-
-        }
-
         Move bestMove = bestChild(rootNode, 0).getIncomingMove();
-
-        if (false) {
-            System.out.println("Best move: " + bestMove.getPiece().getName() + " "
-                    + bestMove.getMovement().getX(currentPlayer.getColor()) + " "
-                    + bestMove.getMovement().getY(currentPlayer.getColor()));
-        }
 
         return new MCTSMoveObject(bestMove, iterations);
     }
@@ -81,11 +61,6 @@ public class MCTSRave {
         double bestValue = Double.NEGATIVE_INFINITY;
         double bestUTC = Double.NEGATIVE_INFINITY;
         double bestRave = Double.NEGATIVE_INFINITY;
-        boolean log = false;
-        if (cValue == 0.0) {
-            log = false;
-            // System.out.println("Bias: " + bias / biasCOunter);
-        }
 
         for (Node child : node.getChildren()) {
             double uctValue = (child.getValue() / child.getVisits())
@@ -97,8 +72,6 @@ public class MCTSRave {
             double raveBias = ((RAVE_BIAS - node.getVisits()) / RAVE_BIAS) > 0
                     ? ((RAVE_BIAS - node.getVisits()) / RAVE_BIAS)
                     : 0;
-            bias += raveBias;
-            biasCOunter++;
 
             if (child.getRaveWinRate() > bestRave) {
                 bestRave = child.getRaveWinRate();
@@ -106,17 +79,7 @@ public class MCTSRave {
 
             double raveValue = child.getRaveVisits() == 0 ? uctValue
                     : raveBias * child.getRaveWinRate() + (1 - raveBias) * uctValue;
-            if (log) {
-                ;
-                System.out.println("Move: " + child.getIncomingMove().getPiece().getName() + " "
-                        + child.getIncomingMove().getMovement().getX(currentPlayer.getColor()) + " "
-                        + child.getIncomingMove().getMovement().getY(currentPlayer.getColor()) + "\t Reward: "
-                        + child.getValue()
-                        + "\t Visits: " + child.getVisits() + "\t Rave Visits: " + child.getRaveVisits()
-                        + "\t Rave reward: " + child.getRaveReward() + "\t Winrate: "
-                        + (child.getRaveWinRate()) + "\t Rave Value: " + raveValue
-                        + "\t UCT: " + uctValue);
-            }
+
             if (raveValue > 0.99) {
                 return child;
             }
@@ -125,10 +88,6 @@ public class MCTSRave {
                 bestValue = raveValue;
                 bestChild = child;
             }
-        }
-        if (log) {
-            System.out.println("Beste Value: " + bestValue + "\t Best UTC: " + bestUTC + "\t Best Rave: " + bestRave
-                    + "\t Bias: " + bias / biasCOunter);
         }
 
         return bestChild;

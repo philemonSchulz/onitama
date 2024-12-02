@@ -8,17 +8,12 @@ import com.example.model.Game;
 import com.example.model.GameStats;
 import com.example.model.MCTSMoveObject;
 import com.example.model.Move;
-import com.example.model.Player;
 import com.example.model.Game.GameState;
 import com.example.model.Player.PlayerColor;
 import com.example.service.GameService;
 
 public class MCTS {
     private double CVALUE = 0.3;
-    private Player currentPlayer;
-
-    private long duration = 0;
-    private int durationCounter = 0;
 
     public class Node {
         private Node parent;
@@ -74,9 +69,7 @@ public class MCTS {
         }
     }
 
-    public MCTSMoveObject uctSearch(Game game, boolean useTimeInsteadOfIterations, double cValue) {
-        this.CVALUE = cValue;
-        this.currentPlayer = game.getCurrentPlayer();
+    public MCTSMoveObject uctSearch(Game game, boolean useTimeInsteadOfIterations) {
         Node rootNode = new Node(new MctsState(new Game(game)), null);
         int iterations = 0;
 
@@ -96,26 +89,8 @@ public class MCTS {
                 backup(node, reward);
             }
         }
-        if (false) {
-            System.out.println("Iterations: " + iterations + "Cvalue: " + cValue);
-            game.getBoard().printBoard();
-            for (Node child : rootNode.getChildren()) {
-                System.out.println("Move: " + child.getIncomingMove().getPiece().getName() + " "
-                        + child.getIncomingMove().getMovement().getX(currentPlayer.getColor()) + " "
-                        + child.getIncomingMove().getMovement().getY(currentPlayer.getColor()) + "\t Reward: "
-                        + child.getReward()
-                        + "\t Visits: " + child.getVisits() + "\t Winrate: " + (child.getReward() / child.getVisits()));
-            }
-        }
-        // TODO: Nicht die beste quote, sondern node mit meisten Simulationen
-        // zurückgeben
+
         Move bestMove = bestChild(rootNode, 0).getIncomingMove();
-        if (false) {
-            System.out.println("Best move: " + bestMove.getPiece().getName() + " "
-                    + bestMove.getMovement().getX(currentPlayer.getColor()) + " "
-                    + bestMove.getMovement().getY(currentPlayer.getColor()));
-            System.out.println("Avg Duration: " + duration / (durationCounter / 1));
-        }
 
         return new MCTSMoveObject(bestMove, iterations);
     }
@@ -193,8 +168,6 @@ public class MCTS {
                 return 0;
             }
             GameStats gameStats = gameService.runRandomGame(newGame);
-            duration += gameStats.getDuration();
-            durationCounter++;
             this.winner = gameStats.getWinner().getColor();
             return gameStats.getWinner().getColor() == game.getCurrentPlayer().getColor() ? 1 : 0;
         }

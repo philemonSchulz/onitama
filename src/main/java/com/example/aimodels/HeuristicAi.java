@@ -14,9 +14,6 @@ import com.example.model.Player.PlayerColor;
 import com.example.service.GameService;
 
 public class HeuristicAi {
-    private double PieceWeight = 1;
-    private double PositionWeight = 1;
-    private double MobilityWeight = 1;
 
     private HashMap<Move, Double> moveValues;
     private Game game;
@@ -32,10 +29,7 @@ public class HeuristicAi {
         this.gameService = new GameService();
     }
 
-    public Move getMove(double pieceWeight, double positionWeight, double mobilityWeight) {
-        this.PieceWeight = pieceWeight;
-        this.PositionWeight = positionWeight;
-        this.MobilityWeight = mobilityWeight;
+    public Move getMove() {
         if (initialPossibleMoves.getAllMoves().size() == 0) {
             System.out.println("No possible moves");
             return null;
@@ -63,16 +57,6 @@ public class HeuristicAi {
             }
         }
         Move bestMove = result.get((int) (Math.random() * result.size()));
-        if (false) {
-            game.getBoard().printBoard();
-            for (Move move : moveValues.keySet()) {
-                System.out.println(move.getPiece().getName() + " " + move.getMovement().getX(currentPlayerColor) + " "
-                        + move.getMovement().getY(currentPlayerColor) + " Value: " + moveValues.get(move));
-            }
-            System.out.println("Selecting move: "
-                    + bestMove.getPiece().getName() + " " + bestMove.getMovement().getX(currentPlayerColor) + " "
-                    + bestMove.getMovement().getY(currentPlayerColor));
-        }
 
         return bestMove;
     }
@@ -89,9 +73,9 @@ public class HeuristicAi {
 
         // Evaluate the number of pieces for each player
         if (currentPlayerColor == PlayerColor.RED) {
-            value += (gameCopy.getPlayerRedPieces().size() - gameCopy.getPlayerBluePieces().size()) * PieceWeight;
+            value += (gameCopy.getPlayerRedPieces().size() - gameCopy.getPlayerBluePieces().size());
         } else {
-            value += (gameCopy.getPlayerBluePieces().size() - gameCopy.getPlayerRedPieces().size()) * PieceWeight;
+            value += (gameCopy.getPlayerBluePieces().size() - gameCopy.getPlayerRedPieces().size());
         }
 
         // Evaluate the positioning on the board for the current players pieces
@@ -106,13 +90,13 @@ public class HeuristicAi {
             }
             switch (helper) {
                 case 0:
-                    value += (1 * PositionWeight);
+                    value += 1;
                     break;
                 case 1:
-                    value -= (1 * PositionWeight);
+                    value -= 1;
                     break;
                 case 2:
-                    value -= (2 * PositionWeight);
+                    value -= 2;
                     break;
                 default:
                     break;
@@ -121,7 +105,7 @@ public class HeuristicAi {
 
         // Evaluate the mobility for the current players pieces
         value += (MoveController.getAllPossibleMovesAsObject(gameCopy).getAllMoves().size()
-                - initialPossibleMoves.getAllMoves().size()) * MobilityWeight;
+                - initialPossibleMoves.getAllMoves().size());
 
         return value;
     }

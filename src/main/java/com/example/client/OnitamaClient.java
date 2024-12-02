@@ -21,7 +21,7 @@ public class OnitamaClient {
             switch (choice) {
                 case 1 -> playLocally();
                 case 2 -> connectToServer();
-                case 3 -> gameService.dayTest();
+                case 3 -> gameService.runCustomTests();
                 case 4 -> {
                     System.out.println("Exiting...");
                     return;
@@ -70,6 +70,7 @@ public class OnitamaClient {
         System.out.println("2. Random Ai with priority to capturing moves");
         System.out.println("3. MCTS");
         System.out.println("4. RAVE MCTS");
+        System.out.println("5. Heuristic MCTS");
 
         int aiChoice = getChoice();
         return switch (aiChoice) {
@@ -77,6 +78,7 @@ public class OnitamaClient {
             case 2 -> AiType.RANDOM_PRIOTIZING;
             case 3 -> AiType.MCTS;
             case 4 -> AiType.RAVE_MCTS;
+            case 5 -> AiType.HEURISTIC_MCTS;
             default -> AiType.RANDOM;
         };
     }
