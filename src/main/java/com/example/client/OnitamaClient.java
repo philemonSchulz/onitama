@@ -68,17 +68,19 @@ public class OnitamaClient {
         System.out.println(headString);
         System.out.println("1. Random");
         System.out.println("2. Random Ai with priority to capturing moves");
-        System.out.println("3. MCTS");
-        System.out.println("4. RAVE MCTS");
-        System.out.println("5. Heuristic MCTS");
+        System.out.println("3. Heuristic Ai");
+        System.out.println("4. MCTS");
+        System.out.println("5. RAVE MCTS");
+        System.out.println("6. Heuristic MCTS");
 
         int aiChoice = getChoice();
         return switch (aiChoice) {
             case 1 -> AiType.RANDOM;
             case 2 -> AiType.RANDOM_PRIOTIZING;
-            case 3 -> AiType.MCTS;
-            case 4 -> AiType.RAVE_MCTS;
-            case 5 -> AiType.HEURISTIC_MCTS;
+            case 3 -> AiType.HEURISTIC;
+            case 4 -> AiType.MCTS;
+            case 5 -> AiType.RAVE_MCTS;
+            case 6 -> AiType.HEURISTIC_MCTS;
             default -> AiType.RANDOM;
         };
     }

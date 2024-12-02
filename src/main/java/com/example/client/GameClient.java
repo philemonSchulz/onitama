@@ -127,12 +127,13 @@ public class GameClient {
             System.out.println("Choose Ai Type:");
             System.out.println("1. Random");
             System.out.println("2. Random Ai with priority to capturing moves");
-            System.out.println("3. MCTS");
-            System.out.println("4. RAVE MCTS");
-            System.out.println("5. Heuristic MCTS");
+            System.out.println("3. Heuristic Ai");
+            System.out.println("4. MCTS");
+            System.out.println("5. RAVE MCTS");
+            System.out.println("6. Heuristic MCTS");
             choice = scanner.nextInt();
 
-            while (choice < 1 || choice > 5) {
+            while (choice < 1 || choice > 6) {
                 System.out.println("Invalid choice. Please try again.");
                 choice = scanner.nextInt();
             }
@@ -146,12 +147,15 @@ public class GameClient {
                     aiType = AiType.RANDOM_PRIOTIZING;
                     break;
                 case 3:
-                    aiType = AiType.MCTS;
+                    aiType = AiType.HEURISTIC;
                     break;
                 case 4:
-                    aiType = AiType.RAVE_MCTS;
+                    aiType = AiType.MCTS;
                     break;
                 case 5:
+                    aiType = AiType.RAVE_MCTS;
+                    break;
+                case 6:
                     aiType = AiType.HEURISTIC_MCTS;
                     break;
             }
